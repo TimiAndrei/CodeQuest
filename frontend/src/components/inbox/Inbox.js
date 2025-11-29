@@ -148,13 +148,13 @@ function Inbox() {
               <div className="inner-card-inbox">
                 <ul className="notifications-list">
                   <li className="notification-item">
-                    <span className="notification-message">
+                    <div className="notification-message">
                       {remainingTime > 0 && user.role !== "admin"
                         ? `Next reward available in ${formatTime(
                             remainingTime
                           )}`
                         : "Daily Reward Available! Click to spin the wheel."}
-                    </span>
+                    </div>
                     {remainingTime <= 0 || user.role === "admin" ? (
                       <button
                         className="button-inbox reward-button"
@@ -165,28 +165,48 @@ function Inbox() {
                     ) : null}
                   </li>
                   {sortedNotifications.map((notification) => (
-                    <li key={notification.id} className="notification-item">
-                      <span className="notification-message">
+                    <li
+                      key={notification.id}
+                      className={`notification-item ${
+                        notification.message.startsWith("Your friend")
+                          ? "friend-notification"
+                          : ""
+                      }`}
+                    >
+                      <div className="notification-message">
                         {notification.message}
-                      </span>
+                      </div>
                       <div className="button-container-inbox">
-                        <a
-                          href={notification.link}
-                          className="button-inbox accept-button"
-                          onClick={() =>
-                            handleDeleteNotification(notification.id)
-                          }
-                        >
-                          Accept
-                        </a>
-                        <button
-                          className="button-inbox reject-button"
-                          onClick={() =>
-                            handleDeleteNotification(notification.id)
-                          }
-                        >
-                          Reject
-                        </button>
+                        {notification.message.startsWith("Your friend") ? (
+                          <button
+                            className="button-inbox accept-button"
+                            onClick={() =>
+                              handleDeleteNotification(notification.id)
+                            }
+                          >
+                            Ok
+                          </button>
+                        ) : (
+                          <>
+                            <a
+                              href={notification.link}
+                              className="button-inbox accept-button"
+                              onClick={() =>
+                                handleDeleteNotification(notification.id)
+                              }
+                            >
+                              Accept
+                            </a>
+                            <button
+                              className="button-inbox reject-button"
+                              onClick={() =>
+                                handleDeleteNotification(notification.id)
+                              }
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
                       </div>
                     </li>
                   ))}

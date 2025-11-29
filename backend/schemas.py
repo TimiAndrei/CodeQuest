@@ -114,6 +114,8 @@ class ChallengeRead(BaseModel):
     difficulty: str
     language: str
     tags: List[int]
+    friend_username: Optional[str] = None
+    status: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -158,6 +160,7 @@ class CodeSubmission(BaseModel):
     stdin: str
     expected_output: str
     user_id: int
+    time: int
 
 
 # {
@@ -234,6 +237,8 @@ class NotificationCreate(BaseModel):
     message: str
     link: str
     challenger_username: str
+    challenge_id: int
+    reminder: bool = False  # Add this flag to differentiate reminders
 
 
 class NotificationRead(BaseModel):

@@ -14,6 +14,9 @@ from sqlalchemy.orm import relationship, sessionmaker
 
 import os
 
+# SWAP DATABASE_URL IF RUNNING IN DOCKER
+# DATABASE_URL = "postgresql://postgres:admin@localhost:5433/test_db"
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)
@@ -129,6 +132,7 @@ class Notification(Base):
     read = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     challenger_username = Column(String(50))
+    challenge_id = Column(Integer, ForeignKey("challenges.id"))
 
     recipient = relationship("User", back_populates="notifications")
 
@@ -200,6 +204,22 @@ class CommentLike(Base):
     __tablename__ = "commentlikes"
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     comment_id = Column(Integer, ForeignKey("comments.id"), primary_key=True)
+
+
+class ChallengeHistory(Base):
+    __tablename__ = "challengehistory"
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    recipient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    challenge_id = Column(Integer, ForeignKey("challenges.id"), nullable=False)
+    status = Column(String, default="pending")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
+
+    sender = relationship("User", foreign_keys=[sender_id])
+    recipient = relationship("User", foreign_keys=[recipient_id])
+    challenge = relationship("Challenge")
 
 
 Base.metadata.create_all(bind=engine)

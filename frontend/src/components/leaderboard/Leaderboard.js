@@ -110,7 +110,15 @@ function Leaderboard() {
             <div className="list-container-leaderboard">
               <ul className="list-leaderboard">
                 {currentPageUsers.map((user, index) => (
-                  <li key={user.id} className="list-item-leaderboard">
+                  <li
+                    key={user.id}
+                    className={`list-item-leaderboard ${
+                      index < usersPerPage ? "visible" : ""
+                    }`}
+                    style={{
+                      animationDelay: `${index * 0.2}s`,
+                    }}
+                  >
                     <span className="username">{user.username}</span>
                     <span className="points">Points: {user.score}</span>
                     <span className="position">{startIndex + index + 1}</span>

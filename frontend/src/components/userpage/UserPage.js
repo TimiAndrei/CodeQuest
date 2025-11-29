@@ -182,10 +182,38 @@ function UsersPage() {
   if (error) {
     return <div>{error}</div>;
   }
-
   return (
     <div className="user-page-container">
       <ToastContainer />
+      <div className="search-section">
+        <h3>Search Users</h3>
+        <div className="search-bar">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by username"
+          />
+        </div>
+        <div className="search-results">
+          <ul>
+            {searchResults.length === 0 && searchTerm && (
+              <li>No user found with searched name</li>
+            )}
+            {searchResults.map((result) => (
+              <li key={result.id}>
+                {result.username}
+                <button
+                  onClick={() => handleAddFriend(result.username)}
+                  className="button-add-friend"
+                >
+                  Add Friend
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
       <div className="user-page-grid">
         <div className="user-profile-card">
           <h2>User Profile</h2>
@@ -237,35 +265,6 @@ function UsersPage() {
             </div>
           )}
         </div>
-        <div className="search-section">
-          <h3>Search Users</h3>
-          <div className="search-bar">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by username"
-            />
-          </div>
-          <div className="search-results">
-            <ul>
-              {searchResults.length === 0 && searchTerm && (
-                <li>No user found with searched name</li>
-              )}
-              {searchResults.map((result) => (
-                <li key={result.id}>
-                  {result.username}
-                  <button
-                    onClick={() => handleAddFriend(result.username)}
-                    className="button-add-friend"
-                  >
-                    Add Friend
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
         <div className="friends-section">
           <h3>Friends</h3>
           <ul>
@@ -294,60 +293,52 @@ function UsersPage() {
               placeholder="Search by username"
             />
           </div>
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Role</th>
-                <th>Promote</th>
-                <th>Demote</th>
-              </tr>
-            </thead>
-            <tbody>
+          <div className="list-container-challenges">
+            <ul className="list-challenges">
               {filteredAdminUsers.map((u) => (
-                <tr key={u.id}>
-                  <td>{u.username}</td>
-                  <td>{u.role}</td>
-                  <td>
-                    {u.role === "user" && (
-                      <button
-                        onClick={() => handleRoleChange(u.id, "expert")}
-                        className="promote-button"
-                      >
-                        Make Expert
-                      </button>
-                    )}
-                    {u.role === "expert" && (
-                      <button
-                        onClick={() => handleRoleChange(u.id, "admin")}
-                        className="promote-button"
-                      >
-                        Make Admin
-                      </button>
-                    )}
-                  </td>
-                  <td>
-                    {u.role === "expert" && (
-                      <button
-                        onClick={() => handleRoleChange(u.id, "user")}
-                        className="demote-button"
-                      >
-                        Demote
-                      </button>
-                    )}
-                    {u.role === "admin" && (
-                      <button
-                        onClick={() => handleRoleChange(u.id, "expert")}
-                        className="demote-button"
-                      >
-                        Demote
-                      </button>
-                    )}
-                  </td>
-                </tr>
+                <li key={u.id} className="list-item-challenges">
+                  <span>{u.username}</span>
+                  <span>{u.role}</span>
+                  <div className="button-container-challenges">
+                    <div className="promote-buttons">
+                      {u.role === "user" && (
+                        <button
+                          onClick={() => handleRoleChange(u.id, "expert")}
+                          className="promote-button"
+                        >
+                          Make Expert
+                        </button>
+                      )}
+                      {u.role === "expert" && (
+                        <button
+                          onClick={() => handleRoleChange(u.id, "admin")}
+                          className="promote-button"
+                        >
+                          Make Admin
+                        </button>
+                      )}
+                    </div>
+                    <div className="demote-buttons">
+                      {
+                        <button
+                          onClick={() =>
+                            handleRoleChange(
+                              u.id,
+                              u.role === "admin" ? "expert" : "user"
+                            )
+                          }
+                          className="demote-button"
+                          disabled={u.role === "user"}
+                        >
+                          Demote
+                        </button>
+                      }
+                    </div>
+                  </div>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          </div>
         </div>
       )}
     </div>

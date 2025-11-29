@@ -126,13 +126,16 @@
   text-overflow: ellipsis;
 }
 
+/* Remove truncation and allow text wrapping */
 .notification-message {
   float: left;
   margin-left: 0;
-  max-width: 500px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 500px; /* Ensure it doesn't exceed the container width */
+  white-space: normal; /* Allow text to wrap */
+  overflow: visible; /* Remove hidden overflow */
+  text-overflow: unset; /* Disable ellipsis */
+  word-wrap: break-word; /* Break long words if necessary */
+  line-height: 1.5; /* Optional: Adjust line height for better readability */
 }
 
 .button-container-inbox {
@@ -333,4 +336,8 @@
   text-align: center;
   width: 80%;
   white-space: nowrap;
+}
+
+.friend-notification {
+  min-height: 80px;
 }

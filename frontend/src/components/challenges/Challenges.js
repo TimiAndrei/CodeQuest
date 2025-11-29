@@ -19,7 +19,6 @@ import "./challenges.css";
 
 function Challenges() {
   const [allChallenges, setAllChallenges] = useState([]);
-
   const [page, setPage] = useState(0);
   const challengesPerPage = 5;
 
@@ -29,6 +28,8 @@ function Challenges() {
     sortBy: "latest",
     language: "",
     difficulty: "",
+    tag: "",
+    solvedStatus: "all",
   });
 
   const [isLastPage, setIsLastPage] = useState(false);
@@ -53,6 +54,42 @@ function Challenges() {
   const [likes, setLikes] = useState({});
   const [tags, setTags] = useState([]);
   const [challengeTags, setChallengeTags] = useState({});
+  const [visibleChallenges] = useState([]);
+
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      if (filter.solvedStatus === "sent" && user) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8000/users/${user.id}/sent-challenges`
+          );
+          setAllChallenges(response.data);
+        } catch (error) {
+          console.error("Error fetching sent challenges:", error);
+        }
+      } else if (filter.solvedStatus === "received" && user) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8000/users/${user.id}/received-challenges`
+          );
+          setAllChallenges(response.data);
+        } catch (error) {
+          console.error("Error fetching received challenges:", error);
+        }
+      } else {
+        const fetchAll = async () => {
+          try {
+            const data = await getAllChallenges(user.id);
+            setAllChallenges(data);
+          } catch (error) {
+            console.error("Error fetching challenges:", error);
+          }
+        };
+        fetchAll();
+      }
+    };
+    fetchChallenges();
+  }, [filter.solvedStatus, user]);
 
   const fetchTags = useCallback(async () => {
     try {
@@ -138,18 +175,6 @@ function Challenges() {
   }, [fetchLikes]);
 
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const data = await getAllChallenges();
-        setAllChallenges(data);
-      } catch (error) {
-        console.error("Error fetching challenges:", error);
-      }
-    };
-    fetchAll();
-  }, []);
-
-  useEffect(() => {
     const fetchFriends = async () => {
       if (!user) return;
       try {
@@ -197,6 +222,14 @@ function Challenges() {
       );
     }
 
+    if (filter.solvedStatus === "solved") {
+      filtered = filtered.filter((ch) => ch.status === "completed");
+    } else if (filter.solvedStatus === "unsolved") {
+      filtered = filtered.filter(
+        (ch) => ch.status === "pending" || ch.status === "unsolved"
+      );
+    }
+
     if (filter.sortBy === "latest") {
       filtered.sort((a, b) => b.id - a.id);
     } else if (filter.sortBy === "oldest") {
@@ -230,7 +263,7 @@ function Challenges() {
       output: newChallenge.output,
       difficulty: newChallenge.difficulty,
       language: newChallenge.language,
-      tags: newChallenge.tags, // Include tags in the challenge submission
+      tags: newChallenge.tags,
     };
 
     try {
@@ -247,8 +280,8 @@ function Challenges() {
         tags: [], // Reset tags
       });
       setPage(0);
+      const updated = await getAllChallenges(user.id);
 
-      const updated = await getAllChallenges();
       setAllChallenges(updated);
     } catch (error) {
       console.error("Error adding challenge:", error);
@@ -285,12 +318,14 @@ function Challenges() {
       toast.error("Please select at least one friend to challenge.");
       return;
     }
+
     try {
       const challenge = allChallenges.find((c) => c.id === currentChallengeId);
       if (!challenge) throw new Error("Challenge not found.");
 
       await Promise.all(
         selectedFriends.map(async (friendUsername) => {
+          // Fetch the recipient's user data
           const userResponse = await axios.get(
             `http://localhost:8000/users/search`,
             { params: { query: friendUsername } }
@@ -299,16 +334,29 @@ function Challenges() {
           if (!recipient) {
             throw new Error(`User ${friendUsername} not found`);
           }
-          await axios.post(`http://localhost:8000/notifications`, {
-            recipient_id: recipient.id,
-            message: `You have been challenged to "${challenge.title}" challenge by "${user.username}"!`,
-            link: `/soloChallenge/${currentChallengeId}`,
-            challenger_username: user.username,
-          });
+
+          // Send the challenge notification
+          try {
+            await axios.post(`http://localhost:8000/notifications`, {
+              recipient_id: recipient.id,
+              message: `You have been challenged to "${challenge.title}" challenge by "${user.username}"!`,
+              link: `/soloChallenge/${currentChallengeId}`,
+              challenger_username: user.username,
+              challenge_id: currentChallengeId,
+            });
+            toast.success(`Challenge sent to ${friendUsername}!`);
+          } catch (error) {
+            if (error.response && error.response.status === 400) {
+              // Handle specific backend error messages
+              toast.error(error.response.data.detail);
+            } else {
+              console.error("Error sending challenge:", error);
+              toast.error("Failed to send challenge.");
+            }
+          }
         })
       );
 
-      toast.success("Challenge sent successfully!");
       setShowFriendsModal(false);
       setSelectedFriends([]);
     } catch (error) {
@@ -345,6 +393,18 @@ function Challenges() {
               />
 
               <div className="filter-container">
+                <select
+                  name="solvedStatus"
+                  className="filter-dropdown"
+                  value={filter.solvedStatus}
+                  onChange={handleFilterChange}
+                >
+                  <option value="all">All Challenges</option>
+                  <option value="solved">Solved Challenges</option>
+                  <option value="unsolved">Unsolved Challenges</option>
+                  <option value="sent">Sent Challenges</option>
+                  <option value="received">Received Challenges</option>
+                </select>
                 <select
                   name="sortBy"
                   className="filter-dropdown"
@@ -402,11 +462,27 @@ function Challenges() {
 
             <div className="list-container-challenges">
               <ul className="list-challenges">
-                {currentPageChallenges.map((challenge) => (
-                  <li key={challenge.id} className="list-item-challenges">
+                {currentPageChallenges.map((challenge, index) => (
+                  <li
+                    key={`${challenge.id}-${challenge.status}-${index}`}
+                    className={`list-item-challenges ${
+                      challenge.status === "completed" ? "solved" : ""
+                    } ${visibleChallenges.includes(index) ? "visible" : ""}`}
+                    style={{
+                      animationDelay: `${index * 0.2}s`,
+                    }}
+                  >
                     <span>{challenge.title}</span>
                     <span>{challenge.language}</span>
                     <span>{challenge.difficulty}</span>
+                    {filter.solvedStatus === "sent" &&
+                      challenge.friend_username && (
+                        <span>Sent to: {challenge.friend_username}</span>
+                      )}
+                    {filter.solvedStatus === "received" &&
+                      challenge.friend_username && (
+                        <span>From: {challenge.friend_username}</span>
+                      )}
                     <div className="button-container-challenges">
                       <button
                         className="button-challenges solo-button"
@@ -416,12 +492,49 @@ function Challenges() {
                       >
                         Solo Challenge
                       </button>
-                      <button
-                        className="button-challenges friend-button"
-                        onClick={() => openFriendsModal(challenge.id)}
-                      >
-                        Challenge a Friend
-                      </button>
+                      {filter.solvedStatus === "sent" &&
+                      challenge.friend_username ? (
+                        <button
+                          className="button-challenges friend-button"
+                          onClick={async () => {
+                            try {
+                              await axios.post(
+                                `http://localhost:8000/notifications`,
+                                {
+                                  recipient_id: friends.find(
+                                    (friend) =>
+                                      friend.username ===
+                                      challenge.friend_username
+                                  )?.id,
+                                  message: `Reminder: You have been challenged to "${challenge.title}" by "${user.username}"!`,
+                                  link: `/soloChallenge/${challenge.id}`,
+                                  challenger_username: user.username,
+                                  challenge_id: challenge.id,
+                                  reminder: true,
+                                }
+                              );
+                              toast.success(
+                                `Reminder sent to ${challenge.friend_username}!`
+                              );
+                            } catch (error) {
+                              console.error("Error sending reminder:", error);
+                              toast.error(
+                                error.response?.data?.detail ||
+                                  "Failed to send reminder."
+                              );
+                            }
+                          }}
+                        >
+                          Remind Friend
+                        </button>
+                      ) : (
+                        <button
+                          className="button-challenges friend-button"
+                          onClick={() => openFriendsModal(challenge.id)}
+                        >
+                          Challenge a Friend
+                        </button>
+                      )}
                       {user && user.role === "admin" && (
                         <button
                           className="button-challenges delete-button"
