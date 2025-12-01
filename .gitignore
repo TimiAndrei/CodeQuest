@@ -1,0 +1,4 @@
+postgres-data/*
+*.docx
+backend/venv/
+backend/__pycache__/
