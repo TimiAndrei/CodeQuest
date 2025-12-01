@@ -5,7 +5,7 @@ import UsersPage from "./components/user/UsersPage";
 import Navbar from "./components/navbar/Navbar";
 import Dashboard from "./components/dashboard/Dashboard.js";
 //not implemented yet
-// import Challenges from "./components/challenges/Challenges";
+import Challenges from "./components/challenges/Challenges";
 // import Leaderboard from "./components/leaderboard/Leaderboard";
 function App() {
   return (
@@ -15,8 +15,8 @@ function App() {
         <Routes>
           <Route path="/users" element={<UsersPage />} />
           <Route path="/dashboard" element={<Dashboard/>} />
-          {/* <Route path="/challenges" element={<Challenges/>} />
-          <Route path="/leaderboard" element={<Leaderboard/>} /> */}
+          <Route path="/challenges" element={<Challenges/>} />
+          {/* <Route path="/leaderboard" element={<Leaderboard/>} /> */}
         </Routes>
       </Router>
     </div>

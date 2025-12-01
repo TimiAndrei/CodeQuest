@@ -3,8 +3,8 @@
   width: 100%;
   background-color: #555;
 }
-/*am folosit metoda ciocanitoare*/
-.grid-layout {
+
+.grid-layout-dashboard {
   display: grid;
   grid-template-columns: 20% 60% 20%;
   width: 100%;
@@ -12,24 +12,24 @@
   background-color: #555;
 }
 
-.grid-item {
+.grid-item-dashboard {
   padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.grid-item.middle {
+.grid-item-dashboard.middle-dashboard {
   background-color: #555;
   color: #555;
   padding: 20px;
 }
 
-.grid-item.invisible {
+.grid-item-dashboard.invisible-dashboard {
   background-color: #555;
 }
 
-.card {
+.card-dashboard {
   width: 100%;
   background: #fff;
   border-radius: 8px;
@@ -43,7 +43,7 @@
   min-width: 600px;
 }
 
-.progress-bar {
+.progress-bar-dashboard {
   width: 90%;
   height: 20px;
   background-color: #e9ecef;
@@ -52,24 +52,19 @@
   position: relative;
 }
 
-.progress {
+.progress-dashboard {
   height: 100%;
   background-color: #86bc25;
   border-radius: 10px;
   transition: width 0.3s ease;
 }
 
-.card-text {
+.card-text-dashboard {
   text-align: center;
   margin: none;
 }
 
-.card-text-small {
-  text-align: center;
-  margin-top: none;
-}
-
-.inner-card {
+.inner-card-dashboard {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -81,7 +76,7 @@
   min-width: 300px;
 }
 
-.icon {
+.icon-dashboard {
   font-size: 1.5rem;
   color: #155724;
   background-color: #d1e7dd;
@@ -92,45 +87,43 @@
   align-items: center;
 }
 
-.bottom-text {
+.bottom-text-dashboard {
   text-align: center;
   font-size: 1rem;
   color: #555;
 }
 
 @media (max-width: 1400px) {
-  .card {
+  .card-dashboard {
     min-width: 500px;
   }
 
-  .grid-layout {
+  .grid-layout-dashboard {
     grid-template-columns: 25% 50% 25%;
   }
-  
-.progress-bar {
-  width: 80%;
-  min-width: 150px;
+
+  .progress-bar-dashboard {
+    width: 80%;
+    min-width: 150px;
   }
 }
 
-
-
 @media (max-width: 1000px) {
-  .card {
+  .card-dashboard {
     min-width: 300px;
   }
 
-  .grid-layout {
+  .grid-layout-dashboard {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
     gap: 10px;
   }
 
-  .grid-item.middle {
+  .grid-item-dashboard.middle-dashboard {
     order: 1;
   }
 
-  .grid-item.invisible {
+  .grid-item-dashboard.invisible-dashboard {
     display: none;
   }
 }
