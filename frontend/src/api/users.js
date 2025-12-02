@@ -1,8 +1,4 @@
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: "http://localhost:8000",
-});
+import api from "./apiInstance";
 
 export const getUsers = async () => {
   try {
@@ -13,5 +9,3 @@ export const getUsers = async () => {
     throw error;
   }
 };
-
-export default api;

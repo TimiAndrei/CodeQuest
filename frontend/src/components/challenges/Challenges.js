@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getChallenges } from "../../api/challenges";
 
 import "./challenges.css";
@@ -7,6 +8,7 @@ function Challenges() {
   const [challenges, setChallenges] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredChallenges, setFilteredChallenges] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchChallenges = async () => {
@@ -28,6 +30,10 @@ function Challenges() {
     );
     setFilteredChallenges(filtered);
   }, [searchTerm, challenges]);
+
+  const handleSoloChallengeClick = (id) => {
+    navigate(`/soloChallenge/${id}`);
+  };
 
   return (
     <div className="challenges-container">
@@ -51,7 +57,10 @@ function Challenges() {
                   <li key={challenge.id} className="list-item-challenges">
                     <span>{challenge.title}</span>
                     <div className="button-container-challenges">
-                      <button className="button-challenges solo-button">
+                      <button
+                        className="button-challenges solo-button"
+                        onClick={() => handleSoloChallengeClick(challenge.id)}
+                      >
                         Solo Challenge
                       </button>
                       <button className="button-challenges friend-button">

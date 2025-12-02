@@ -21,7 +21,7 @@ function NavBar() {
         </NavLink>
 
         <ul className={click ? "nav-menu active" : "nav-menu"}>
-          
+
           <li className="nav-item">
             <NavLink
               to="/dashboard"
@@ -42,6 +42,17 @@ function NavBar() {
               onClick={handleClick}
             >
               Challenges
+            </NavLink>
+          </li>
+          <li className="nav-item">
+            <NavLink
+              to="/resources"
+              className={({ isActive }) =>
+                isActive ? "nav-links active" : "nav-links"
+              }
+              onClick={handleClick}
+            >
+              Resources
             </NavLink>
           </li>
           <li className="nav-item">

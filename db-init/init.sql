@@ -1,6 +1,16 @@
-DROP TABLE IF EXISTS "badges";
+DROP TABLE IF EXISTS "friends" CASCADE;
+DROP TABLE IF EXISTS "userbadge" CASCADE;
+DROP TABLE IF EXISTS "userchallenge" CASCADE;
+
+DROP TABLE IF EXISTS "badges" CASCADE;
+DROP TABLE IF EXISTS "challenges" CASCADE;
+DROP TABLE IF EXISTS "resources" CASCADE;
+DROP TABLE IF EXISTS "users" CASCADE;
+
 DROP SEQUENCE IF EXISTS badge_id_seq;
-CREATE SEQUENCE badge_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
+DROP SEQUENCE IF EXISTS challenge_id_seq;
+DROP SEQUENCE IF EXISTS resource_id_seq;
+DROP SEQUENCE IF EXISTS users_id_seq;
 
 CREATE TABLE "public"."badges" (
     "id" integer DEFAULT nextval('badge_id_seq') NOT NULL,
@@ -9,7 +19,6 @@ CREATE TABLE "public"."badges" (
     CONSTRAINT "badge_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "badge_title_key" UNIQUE ("title")
 ) WITH (oids = false);
-
 
 DROP TABLE IF EXISTS "challenges";
 DROP SEQUENCE IF EXISTS challenge_id_seq;
@@ -26,14 +35,12 @@ CREATE TABLE "public"."challenges" (
     CONSTRAINT "challenge_title_key" UNIQUE ("title")
 ) WITH (oids = false);
 
-
 DROP TABLE IF EXISTS "friends";
 CREATE TABLE "public"."friends" (
     "user_id1" integer NOT NULL,
     "user_id2" integer NOT NULL,
     CONSTRAINT "friend_pkey" PRIMARY KEY ("user_id1", "user_id2")
 ) WITH (oids = false);
-
 
 DROP TABLE IF EXISTS "resources";
 DROP SEQUENCE IF EXISTS resource_id_seq;
@@ -47,7 +54,6 @@ CREATE TABLE "public"."resources" (
     CONSTRAINT "resource_title_key" UNIQUE ("title")
 ) WITH (oids = false);
 
-
 DROP TABLE IF EXISTS "userbadge";
 CREATE TABLE "public"."userbadge" (
     "user_id" integer NOT NULL,
@@ -55,14 +61,12 @@ CREATE TABLE "public"."userbadge" (
     CONSTRAINT "friends_pkey" PRIMARY KEY ("user_id", "badge_id")
 ) WITH (oids = false);
 
-
 DROP TABLE IF EXISTS "userchallenge";
 CREATE TABLE "public"."userchallenge" (
     "user_id" integer NOT NULL,
     "challenge_id" integer NOT NULL,
     CONSTRAINT "userchallenge_pkey" PRIMARY KEY ("user_id", "challenge_id")
 ) WITH (oids = false);
-
 
 DROP TABLE IF EXISTS "users";
 DROP SEQUENCE IF EXISTS users_id_seq;
@@ -79,7 +83,6 @@ CREATE TABLE "public"."users" (
     CONSTRAINT "users_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "users_username_key" UNIQUE ("username")
 ) WITH (oids = false);
-
 
 ALTER TABLE ONLY "public"."friends" ADD CONSTRAINT "friend_user_id1_fkey" FOREIGN KEY (user_id1) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."friends" ADD CONSTRAINT "friend_user_id2_fkey" FOREIGN KEY (user_id2) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;

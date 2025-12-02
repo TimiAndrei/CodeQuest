@@ -162,11 +162,11 @@ def read_challenges(skip: int = 0, limit: int = 10, db: Session = Depends(get_db
 
 @app.get("/challenges/{challenge_id}", response_model=challengeRead)
 def read_challenge(challenge_id: int, db: Session = Depends(get_db)):
-    challenge = db.query(challenge).filter(
+    db_challenge = db.query(challenge).filter(
         challenge.id == challenge_id).first()
-    if challenge is None:
+    if db_challenge is None:
         raise HTTPException(status_code=404, detail="challenge not found")
-    return challenge
+    return db_challenge
 
 
 @app.put("/challenges/{challenge_id}", response_model=challengeRead)
