@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class UserCreate(BaseModel):
@@ -14,6 +15,18 @@ class UserRead(BaseModel):
     email: str
     role: str
     score: int
+
+    class Config:
+        from_attributes = True
+
+
+class UserSearch(BaseModel):
+    query: str
+
+
+class FriendCreate(BaseModel):
+    user_id1: int
+    user_id2: int
 
     class Config:
         from_attributes = True
@@ -54,6 +67,7 @@ class BadgeUpdate(BaseModel):
 class ChallengeCreate(BaseModel):
     title: str
     description: str
+    input: str
     output: str
     difficulty: str
     language: str
@@ -63,6 +77,7 @@ class ChallengeRead(BaseModel):
     id: int
     title: str
     description: str
+    input: str
     output: str
     difficulty: str
     language: str
@@ -74,9 +89,11 @@ class ChallengeRead(BaseModel):
 class ChallengeUpdate(BaseModel):
     title: str = None
     description: str = None
+    input: str
     output: str = None
     difficulty: str = None
     language: str = None
+
 
 class ResourceCreate(BaseModel):
     title: str
@@ -97,3 +114,79 @@ class ResourceUpdate(BaseModel):
     description: str = None
 
 
+class CodeSubmission(BaseModel):
+    source_code: str
+    challenge_id: int
+    language_id: int
+    stdin: str
+    expected_output: str
+    user_id: int
+
+
+# {
+#   "stdout": "True",
+#   "time": "0.008",
+#   "memory": 3296,
+#   "stderr": null,
+#   "token": "17d554c1-1ef3-4c32-ab40-f18e995cef88",
+#   "compile_output": null,
+#   "message": null,
+#   "status": {
+#     "id": 3,
+#     "description": "Accepted"
+#   }
+# }
+
+
+class CodeSubmissionStatus(BaseModel):
+    id: int
+    description: str
+
+
+class CodeSubmissionResult(BaseModel):
+    status: CodeSubmissionStatus
+    stdout: str
+    stderr: str = ""
+    expected_output: str
+    actual_output: str
+    time: str
+    memory: int
+    token: str
+    compile_output: str = ""
+    message: str = ""
+    points_awarded: int = 0
+    badge_awarded: str = ""
+
+
+class TagCreate(BaseModel):
+    name: str
+
+
+class TagRead(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class TagUpdate(BaseModel):
+    name: str = None
+
+
+class ChallengeTagCreate(BaseModel):
+    challenge_id: int
+    tag_id: int
+
+
+class ChallengeTagRead(BaseModel):
+    challenge_id: int
+    tag_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ChallengeTagUpdate(BaseModel):
+    challenge_id: int = None
+    tag_id: int = None
