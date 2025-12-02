@@ -1,0 +1,146 @@
+.solo-challenge-container {
+    margin-top: 5%;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #555;
+  }
+  
+  .grid-layout-solo {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    width: 100%;
+    height: 100%;
+    gap: 20px;
+  }
+  
+  .grid-item-solo {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .grid-item-solo.left-solo {
+    background-color: #f8f9fa;
+    max-width: 500px;
+    max-height: 500px;
+    margin-left: 5%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+  }
+  
+  .grid-item-solo.right-solo {
+    background-color: #e9ecef;
+    max-width: 800px;
+    max-height: 500px;
+    margin-right: 5%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+  }
+  
+  .card-solo {
+    width: 90%;
+    max-width: 100%;
+    max-height: 90%;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .card-solo h3 {
+    margin: none;
+    font-size: 1.5rem;
+  }
+  
+  .card-solo p {
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  .language-display {
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .language-display i {
+    font-size: 1.5rem;
+  }
+  
+  .timer-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .timer-button {
+    padding: 8px 16px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .timer-button.start {
+    background-color: #007bff;
+    width: 100px;
+    color: white;
+  }
+  
+  .timer-button.pause {
+    background-color: #ff6347;
+    width: 100px;
+    color: white;
+  }
+  
+  .submit-button {
+    padding: 8px 16px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .submit-button:hover {
+    background-color: #218838;
+  }
+  
+  .timer-time {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  textarea {
+    width: 100%;
+    max-width: 750px;
+    max-height: 350px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    font-family: monospace;
+    resize: none;
+  }
+  

@@ -1,8 +1,4 @@
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: "http://localhost:8000",
-});
+import api from "./apiInstance";
 
 export const getUsers = async () => {
   try {
@@ -14,4 +10,12 @@ export const getUsers = async () => {
   }
 };
 
-export default api;
+export const getUsersOrderedByPoints = async (skip = 0, limit = 5) => {
+  try {
+    const response = await api.get(`/usersOrderedByPoints/?skip=${skip}&limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching users ordered by points:", error);
+    throw error;
+  }
+};
