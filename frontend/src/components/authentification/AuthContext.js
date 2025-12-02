@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  
 
   const login = async (username, password) => {
     try {
