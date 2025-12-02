@@ -1,0 +1,156 @@
+.navbar {
+  background-color: black;
+  height: 95px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin-bottom: 5px;
+  border-bottom: 3px solid;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 80px;
+  max-width: 1500px;
+  position: relative;
+}
+
+.nav-logo {
+  color: white;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 3rem;
+  width: auto;
+  display: flex;
+  justify-items: center;
+}
+
+.nav-logo .icon {
+  display: inline-block;
+  width: 3rem;
+  height: 3rem;
+  margin-left: 8px;
+}
+
+.nav-menu {
+  display: flex;
+  list-style: none;
+  text-align: center;
+  margin-right: 2rem;
+}
+
+.nav-links {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  height: 100%;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-item {
+  line-height: 20px;
+  margin-top: 13px;
+  margin-right: 1rem;
+  font-size: 2.5rem;
+}
+
+.nav-item:after {
+  content: "";
+  display: block;
+  height: 3px;
+  width: 0;
+  background: transparent;
+}
+
+.nav-item .active {
+  color: white;
+  border: 1px solid white;
+}
+
+.nav-icon {
+  display: none;
+  color: #007cb0;
+}
+
+.nav-icon .icon {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.logoText {
+  font-weight: bolder;
+  font-size: 25px;
+}
+
+
+.nav-button {
+  display: flex;
+  align-items: end;
+  margin-left: 0.5rem;
+}
+
+@media screen and (max-width: 960px) {
+  .nav-menu {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-top: 1px solid #fff;
+    position: absolute;
+    top: 60px;
+    left: -110%;
+    opacity: 1;
+    transition: all 0.5s ease;
+  }
+
+  .nav-menu.active {
+    background: black;
+    left: -30px;
+    opacity: 1;
+    transition: all 0.5s ease;
+    z-index: 1;
+  }
+  .nav-item .active {
+    color: white;
+    border: none;
+  }
+  .nav-links {
+    padding: 1.5rem;
+    width: 100%;
+    display: table;
+  }
+
+  .nav-logo .icon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .nav-icon {
+    display: block;
+    position: absolute;
+    top: 60%;
+    right: 0;
+    transform: translate(-100%, -50%);
+    width: 3rem;
+    height: 3rem;
+    cursor: pointer;
+    color: white;
+    font-size: 30px;
+  }
+}
+
+.line {
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 2rem;
+  font-weight: 300;
+  margin-right: 30px;
+  color: rgba(0, 0, 0, 0.3);
+}
