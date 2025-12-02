@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getResourcesWithPagination } from "../../api/resources";
-
+import {
+  addResources,
+  getResourcesWithPagination,
+  deleteResource,
+} from "../../api/resources";
+import { useAuth } from "../authentification/AuthContext";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./resources.css";
 
 function Resources() {
@@ -11,18 +20,30 @@ function Resources() {
   const [page, setPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
   const navigate = useNavigate();
+  const [newResource, setNewResource] = useState({
+    title: "",
+    description: "",
+  });
+  const [showModal, setShowModal] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchResources = async () => {
       try {
-        const data = await getResourcesWithPagination(page * 6, 6);
-        setResources(data);
+        const data = await getResourcesWithPagination(page * 5, 5);
 
-        if (data.length < 6) {
-          setIsLastPage(true);
-        } else {
-          setIsLastPage(false);
+        const filledData = [...data];
+        while (filledData.length < 5) {
+          filledData.push({
+            id: `placeholder-${filledData.length}`,
+            title: "",
+            description: "",
+            isPlaceholder: true,
+          });
         }
+
+        setResources(filledData);
+        setIsLastPage(data.length < 5);
       } catch (error) {
         console.error("Error fetching resources:", error);
       }
@@ -44,9 +65,39 @@ function Resources() {
     navigate(`/resource/${id}`);
   };
 
-  const placeholders = Array.from({
-    length: Math.max(6 - filteredResources.length, 0),
-  });
+  const handleDeleteResource = async (id) => {
+    try {
+      await deleteResource(id);
+      setResources(resources.filter((resource) => resource.id !== id));
+      setFilteredResources(
+        filteredResources.filter((resource) => resource.id !== id)
+      );
+      toast.success("Resource deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting resource:", error);
+      toast.error("Failed to delete resource.");
+    }
+  };
+
+  const handleAddResource = async () => {
+    const resourceToSubmit = {
+      title: newResource.title,
+      description: newResource.description,
+    };
+
+    try {
+      await addResources(resourceToSubmit);
+      console.log("Resource added successfully!");
+      setShowModal(false);
+      setNewResource({
+        title: "",
+        description: "",
+      });
+      setPage(0);
+    } catch (error) {
+      console.error("Error adding resources:", error);
+    }
+  };
 
   return (
     <div className="resources-container">
@@ -67,23 +118,32 @@ function Resources() {
             <div className="list-container-resources">
               <ul className="list-resources">
                 {filteredResources.map((resource) => (
-                  <li key={resource.id} className="list-item-resources">
-                    <span>{resource.title}</span>
-                    <div className="button-container-resources">
-                      <button
-                        className="button-resources explore-button"
-                        onClick={() => handleExploreClick(resource.id)}
-                      >
-                        Explore
-                      </button>
-                    </div>
-                  </li>
-                ))}
-                {placeholders.map((_, index) => (
                   <li
-                    key={`placeholder-${index}`}
-                    className="list-item-placeholder"
-                  ></li>
+                    key={resource.id}
+                    className={`list-item-resources ${
+                      resource.isPlaceholder ? "placeholder" : ""
+                    }`}
+                  >
+                    <span>{resource.title}</span>
+                    {!resource.isPlaceholder && (
+                      <div className="button-container-resources">
+                        <button
+                          className="button-resources explore-button"
+                          onClick={() => handleExploreClick(resource.id)}
+                        >
+                          Explore
+                        </button>
+                        {user && user.role === "admin" && (
+                          <button
+                            className="button-resources delete-button"
+                            onClick={() => handleDeleteResource(resource.id)}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </li>
                 ))}
               </ul>
               <div className="pagination-controls">
@@ -103,10 +163,64 @@ function Resources() {
                 </button>
               </div>
             </div>
+            {user && (user.role === "admin" || user.role === "expert") && (
+              <div>
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="button-add"
+                >
+                  Add Resource
+                </button>
+              </div>
+            )}
           </div>
         </div>
         <div className="grid-item-resources invisible-resources"></div>
       </div>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Add New Resource</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label>Resource</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter title"
+                value={newResource.title}
+                onChange={(e) =>
+                  setNewResource({ ...newResource, title: e.target.value })
+                }
+              />
+            </Form.Group>
+
+            <Form.Group>
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                placeholder="Enter description"
+                value={newResource.description}
+                onChange={(e) =>
+                  setNewResource({
+                    ...newResource,
+                    description: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleAddResource}>
+            Add Resource
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <ToastContainer />
     </div>
   );
 }

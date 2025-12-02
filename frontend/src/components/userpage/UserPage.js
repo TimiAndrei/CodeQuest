@@ -18,6 +18,8 @@ function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [friends, setFriends] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [adminSearchTerm, setAdminSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -50,9 +52,22 @@ function UsersPage() {
       }
     };
 
+    const fetchAllUsers = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/users`);
+        setAllUsers(response.data);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        setError("Failed to load users.");
+      }
+    };
+
     if (user) {
       fetchProfile();
       fetchFriends();
+      if (user.role === "admin") {
+        fetchAllUsers();
+      }
     }
   }, [user]);
 
@@ -117,6 +132,24 @@ function UsersPage() {
     }
   };
 
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      await axios.put(`http://localhost:8000/users/${userId}`, {
+        role: newRole,
+      });
+      const response = await axios.get(`http://localhost:8000/users`);
+      setAllUsers(response.data);
+      toast.success("User role updated successfully!");
+    } catch (err) {
+      console.error("Error updating user role:", err);
+      toast.error("Failed to update user role.");
+    }
+  };
+
+  const filteredAdminUsers = allUsers.filter((u) =>
+    u.username.toLowerCase().includes(adminSearchTerm.toLowerCase())
+  );
+
   if (loading) {
     return <div>Loading user profile...</div>;
   }
@@ -151,10 +184,10 @@ function UsersPage() {
               />
             </label>
             <div className="user-actions">
-              <button onClick={handleSave} className="save-button">
+              <button onClick={handleSave} className="button-save">
                 Save
               </button>
-              <button onClick={handleEditToggle} className="cancel-button">
+              <button onClick={handleEditToggle} className="button-cancel">
                 Cancel
               </button>
             </div>
@@ -165,10 +198,13 @@ function UsersPage() {
               <strong>Username:</strong> {profile.username}
             </p>
             <p>
+              <strong>Role:</strong> {profile.role}
+            </p>
+            <p>
               <strong>Email:</strong> {profile.email}
             </p>
             <div className="user-actions">
-              <button onClick={handleEditToggle} className="edit-button">
+              <button onClick={handleEditToggle} className="button-edit">
                 Edit
               </button>
             </div>
@@ -193,14 +229,19 @@ function UsersPage() {
             onKeyDown={handleKeyDown}
             placeholder="Search by username"
           />
-          <button onClick={handleSearch}>Search</button>
+          <button onClick={handleSearch} className="button-search">
+            Search
+          </button>
         </div>
         <div className="search-results">
           <ul>
             {searchResults.map((result) => (
               <li key={result.id}>
                 {result.username}{" "}
-                <button onClick={() => handleAddFriend(result.username)}>
+                <button
+                  onClick={() => handleAddFriend(result.username)}
+                  className="button-add-friend"
+                >
                   Add Friend
                 </button>
               </li>
@@ -208,6 +249,70 @@ function UsersPage() {
           </ul>
         </div>
       </div>
+      {user.role === "admin" && (
+        <div className="admin-section">
+          <h3>Manage Users</h3>
+          <div className="admin-search-bar">
+            <input
+              type="text"
+              value={adminSearchTerm}
+              onChange={(e) => setAdminSearchTerm(e.target.value)}
+              placeholder="Search by username"
+            />
+          </div>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAdminUsers.map((u) => (
+                <tr key={u.id}>
+                  <td>{u.username}</td>
+                  <td>{u.role}</td>
+                  <td>
+                    {u.role === "user" && (
+                      <button
+                        onClick={() => handleRoleChange(u.id, "expert")}
+                        className="button-role-change"
+                      >
+                        Make Expert
+                      </button>
+                    )}
+                    {u.role === "expert" && (
+                      <>
+                        <button
+                          onClick={() => handleRoleChange(u.id, "admin")}
+                          className="button-role-change"
+                        >
+                          Make Admin
+                        </button>
+                        <button
+                          onClick={() => handleRoleChange(u.id, "user")}
+                          className="button-role-change"
+                        >
+                          Demote
+                        </button>
+                      </>
+                    )}
+                    {u.role === "admin" && (
+                      <button
+                        onClick={() => handleRoleChange(u.id, "expert")}
+                        className="button-role-change"
+                      >
+                        Demote
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
