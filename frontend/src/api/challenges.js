@@ -19,3 +19,13 @@ export const getChallenge = async (id) => {
         throw error;
     }
 }
+
+export const getChallengesWithPagination = async (skip = 0, limit = 5) => {
+  try {
+    const response = await api.get(`/challenges/?skip=${skip}&limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching challenges:", error);
+    throw error;
+  }
+};
