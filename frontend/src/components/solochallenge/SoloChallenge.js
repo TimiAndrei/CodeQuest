@@ -1,21 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import "./solochallenge.css";
-import { getChallenge } from "../../api/challenges";
+import { getChallenge, submitCode } from "../../api/challenges";
+import { useAuth } from "../authentification/AuthContext";
+import api from "../../api/apiInstance";
+import { Editor } from "@monaco-editor/react";
 
 function SoloChallenge() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [challenge, setChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [code, setCode] = useState("");
+  const [output, setOutput] = useState("");
+  const [recommendedResources, setRecommendedResources] = useState([]);
 
   useEffect(() => {
     const fetchChallenge = async () => {
       try {
         const challengeData = await getChallenge(id);
         setChallenge(challengeData);
+        setCode(getTextStart(challengeData.language));
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch challenge:", err);
@@ -24,25 +32,71 @@ function SoloChallenge() {
       }
     };
 
+    const fetchRecommendedResources = async () => {
+      try {
+        const response = await api.get(
+          `/challenges/${id}/recommended-resources`
+        );
+        setRecommendedResources(response.data);
+      } catch (err) {
+        console.error("Failed to fetch recommended resources:", err);
+      }
+    };
+
     fetchChallenge();
+    fetchRecommendedResources();
   }, [id]);
 
   useEffect(() => {
     let timer;
     if (isRunning) {
-      timer = setInterval(() => {
-        setTime((prevTime) => prevTime + 1);
-      }, 1000);
+      timer = setInterval(() => setTime((prevTime) => prevTime + 1), 1000);
     }
     return () => clearInterval(timer);
   }, [isRunning]);
 
-  const toggleTimer = () => {
-    setIsRunning((prev) => !prev);
-  };
+  const toggleTimer = () => setIsRunning((prev) => !prev);
 
-  const handleSubmit = () => {
-    alert("Code submitted!");
+  const handleSubmit = async () => {
+    const challengeId = parseInt(id, 10);
+    const languageId = getLanguageId(challenge.language);
+    const stdin = challenge.input;
+    const expectedOutput = challenge.output;
+
+    try {
+      const result = await submitCode(
+        challengeId,
+        code,
+        languageId,
+        stdin,
+        expectedOutput,
+        user.id // Pass the user ID
+      );
+      console.log("API Response:", result);
+
+      if (result?.stdout) {
+        setOutput(result.stdout);
+        if (result.points_awarded) {
+          const timeTaken = formatTime();
+          alert(
+            `Congratulations! You have solved the problem in ${timeTaken} and have been awarded ${result.points_awarded} points.`
+          );
+          setTime(0); // Reset the timer
+          setIsRunning(false); // Stop the timer
+        }
+        if (result.badge_awarded) {
+          alert(
+            `Congratulations! You have been awarded the badge: ${result.badge_awarded}`
+          );
+        }
+      } else {
+        setOutput("No output or an error occurred.");
+      }
+    } catch (error) {
+      console.error("Error submitting code:", error);
+      alert(error.response?.data?.detail || "Submission failed.");
+      setOutput("Error submitting code.");
+    }
   };
 
   const formatTime = () => {
@@ -53,95 +107,62 @@ function SoloChallenge() {
       .padStart(2, "0")}`;
   };
 
-  if (loading) {
-    return <div className="solo-challenge-container">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="solo-challenge-container">{error}</div>;
-  }
-
-  const getTextStart = (language) =>{
-    let returnString = "";
-    console.log("Return string" + returnString)
-    console.log(language + " Lang")
-
-    console.log(    language.toUpperCase()
-      + " Lang")
-    switch(language.toUpperCase()){
+  const getTextStart = (language) => {
+    switch (language?.toUpperCase()) {
       case "JAVA":
-        returnString = "public class Main {\n" +
-        "    public static void main(String[] args) {\n" +
-        "        // Write your code here\n" +
-        "    }\n" +
-        "}";
-        return returnString
+        return `public class Main {\n    public static void main(String[] args) {\n        // Write your code here\n    }\n}`;
       case "PYTHON":
-        console.log(returnString)
-        returnString = "def main():\n" +
-        "    # Write your code here\n" +
-        "\n" +
-        "if __name__ == \"__main__\":\n" +
-        "    main()";
-        return returnString
-        
-      case "GO":
-        returnString = "package main\n" +
-        "\n" +
-        "import \"fmt\"\n" +
-        "\n" +
-        "func main() {\n" +
-        "    // Write your code here\n" +
-        "}";
-        return returnString
-      case "C":
-        returnString = "#include <stdio.h>\n" +
-        "\n" +
-        "int main() {\n" +
-        "    // Write your code here\n" +
-        "    return 0;\n" +
-        "}";
-        return returnString
-
+        return `def main():\n    # Write your code here\n\nif __name__ == "__main__":\n    main()`;
       case "C++":
-        returnString = "#include <iostream>\n" +
-        "\n" +
-        "int main() {\n" +
-        "    // Write your code here\n" +
-        "    return 0;\n" +
-        "}";
-        return returnString
+        return `#include <iostream>\n\nint main() {\n    // Write your code here\n    return 0;\n}`;
       case "JAVASCRIPT":
-        returnString = "function main() {\n" +
-        "    // Write your code here\n" +
-        "}\n" +
-        "\n" +
-        "main();";
-        return returnString
-      default :
-        returnString = "Will be implemented"
-        return returnString
+        return `function main() {\n    // Write your code here\n}\n\nmain();`;
+      default:
+        return "// Start coding here...";
     }
-  }
+  };
+
+  const getLanguageId = (language) => {
+    switch (language?.toUpperCase()) {
+      case "PYTHON":
+        return 71;
+      case "JAVASCRIPT":
+        return 63;
+      case "JAVA":
+        return 62;
+      case "C++":
+        return 54;
+      default:
+        return 71; // Default to Python
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
   return (
     <div className="solo-challenge-container">
       <div className="grid-layout-solo">
         <div className="grid-item-solo left-solo">
           <div className="card-solo">
-            <h3>Challenge Details</h3>
+            <h3>{challenge.title}</h3>
             <p>
               <strong>Difficulty:</strong> {challenge.difficulty}
             </p>
             <p>
               <strong>Language:</strong> {challenge.language}
             </p>
-            <p>
-              <strong>Description:</strong> {challenge.description}
-            </p>
+            <p>{challenge.description}</p>
           </div>
-          <div className="card-solo">
-            <h3>Expected Output</h3>
-            <p>{challenge.output}</p>
+          <div className="recommended-resources">
+            <h3>Recommended Resources</h3>
+            <ul>
+              {recommendedResources.map((resource) => (
+                <li key={resource.id}>
+                  <Link to={`/resource/${resource.id}`}>{resource.title}</Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
         <div className="grid-item-solo right-solo">
@@ -156,17 +177,27 @@ function SoloChallenge() {
               {isRunning ? "Pause" : "Start"}
             </button>
             <p className="timer-time">{formatTime()}</p>
-            <button onClick={handleSubmit}  className="submit-button">
+            <button onClick={handleSubmit} className="submit-button">
               Submit
             </button>
           </div>
 
-          <textarea
-            name="postContent"
-            defaultValue = {getTextStart(challenge.language)}
-            rows={20}
-            cols={80}
+          <Editor
+            height="400px"
+            language={challenge.language.toLowerCase()}
+            theme="vs-dark"
+            value={code}
+            onChange={(newValue) => setCode(newValue)}
+            options={{
+              readOnly: !isRunning,
+            }}
           />
+          {output && (
+            <div className="output-container">
+              <h3>Output:</h3>
+              <pre>{output}</pre>
+            </div>
+          )}
         </div>
       </div>
     </div>

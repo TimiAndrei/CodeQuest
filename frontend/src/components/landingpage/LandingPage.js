@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./landingPage.css";
 import { getChallengesWithPagination } from "../../api/challenges";
 import { getResourcesWithPagination } from "../../api/resources";
@@ -8,6 +9,7 @@ function LandingPage() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,7 +27,7 @@ function LandingPage() {
           setIsLastPage(false);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);  
+        console.error("Error fetching data:", error);
       }
     };
 
@@ -40,6 +42,14 @@ function LandingPage() {
     }
   };
 
+  const handleItemClick = (id) => {
+    if (activeTab === "challenges") {
+      navigate(`/soloChallenge/${id}`);
+    } else {
+      navigate(`/resource/${id}`);
+    }
+  };
+
   const placeholders = Array.from({ length: 5 - data.length });
 
   return (
@@ -48,7 +58,16 @@ function LandingPage() {
         <div className="grid-item-landing invisible-landing"></div>
         <div className="grid-item-landing middle-landing">
           <div className="card-landing">
-          <div><h2>What's new?</h2></div>
+            <div className="welcome-message">
+              <h1>Welcome to CodeQuest!</h1>
+              <p>
+                Please log in to experience the full features of the
+                application.
+              </p>
+            </div>
+            <div>
+              <h2>What's new?</h2>
+            </div>
             <div className="tab-buttons">
               <button
                 className={`tab-button ${
@@ -72,13 +91,19 @@ function LandingPage() {
             <div className="content-list">
               <ul className="list-landing">
                 {data.map((item) => (
-                  <li key={item.id} className="list-item-landing">
+                  <li
+                    key={item.id}
+                    className="list-item-landing"
+                    onClick={() => handleItemClick(item.id)}
+                  >
                     <span>{item.title}</span>
                   </li>
                 ))}
                 {placeholders.map((_, index) => (
-                  <li key={`placeholder-${index}`} className="list-item-placeholder">
-                  </li>
+                  <li
+                    key={`placeholder-${index}`}
+                    className="list-item-placeholder"
+                  ></li>
                 ))}
               </ul>
               <div className="pagination-controls">

@@ -1,7 +1,30 @@
 .challenges-container {
-  margin-top: 5%;
   width: 100%;
-  background-color: #555;
+  min-height: 90vh;
+  background: linear-gradient(
+    -45deg,
+    #1a1a1a,
+    #333333,
+    #0d1b2a,
+    #1b263b
+  ); /* Darker gradient */
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .grid-layout-challenges {
@@ -9,24 +32,20 @@
   grid-template-columns: 20% 60% 20%;
   width: 100%;
   height: 100%;
-  background-color: #555;
 }
 
 .grid-item-challenges {
-  padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .grid-item-challenges.middle-challenges {
-  background-color: #555;
-  color: #555;
-  padding: 20px;
+  color: #fff;
 }
 
 .grid-item-challenges.invisible-challenges {
-  background-color: #555;
+  background-color: transparent;
 }
 
 .main-container-challenges {
@@ -45,22 +64,64 @@
 }
 
 .search-input-challenges {
-  width: 80%;
+  width: 70%;
   padding: 10px;
+  margin-right: 10px;
+  margin-left: 0px;
   border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 1rem;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  color: #fff;
+  animation: fadeInScale 0.5s ease-in-out;
+}
+
+.search-input-challenges:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
 }
 
 .list-container-challenges {
   width: 100%;
-  background-color: #f8f9fa;
+  min-width: 600px; /* Ensure consistent width */
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  height: 500px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  min-height: 500px;
+  color: #fff;
+  animation: fadeInScale 0.5s ease-in-out;
+  transition: box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.list-container-challenges:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .list-challenges {
@@ -71,6 +132,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  width: 100%; /* Ensure consistent width */
 }
 
 .list-item-challenges {
@@ -78,43 +140,64 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: #fff;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
   margin-bottom: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 60px;
+}
+
+.list-item-challenges:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+.list-item-challenges span {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-item-challenges span:nth-child(1) {
+  max-width: 80%;
+}
+
+.list-item-challenges span:nth-child(2),
+.list-item-challenges span:nth-child(3) {
+  max-width: 10%;
+}
+
+.button-container-challenges {
+  flex: 2;
+  display: flex;
+  justify-content: flex-end;
+  max-width: 400px;
+  gap: 5px;
 }
 
 .list-item-placeholder {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: transparent; 
+  background-color: transparent;
   box-shadow: none;
-  height: 5px; 
-  visibility: hidden; 
+  height: 5px;
+  visibility: hidden;
 }
 
 .pagination-controls {
   display: flex;
   justify-content: center;
+  height: 45px;
   gap: 10px;
   margin-top: 10px;
 }
-
-.pagination-button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: #fff;
-  cursor: pointer;
-}
-
-.pagination-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
 
 .button-container-challenges {
   display: flex;
@@ -127,14 +210,175 @@
   border-radius: 5px;
   cursor: pointer;
   font-size: 0.9rem;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  color: #fff;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  transition: box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.button-challenges:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
 }
 
 .solo-button {
   background-color: #86bc25;
-  color: #fff;
+}
+
+.solo-button:hover {
+  background-color: #76a520;
 }
 
 .friend-button {
   background-color: #007bff;
+}
+
+.friend-button:hover {
+  background-color: #0056b3;
+}
+
+.delete-button {
+  background-color: #dc3545;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+}
+
+.button-add {
+  padding: 12px 20px;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
   color: #fff;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+  animation: fadeInScale 0.5s ease-in-out;
+}
+
+.button-add:hover {
+  background-color: #218838;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+/*Modal*/
+.modal-content {
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  color: #fff;
+}
+
+.modal-header,
+.modal-footer {
+  border: none;
+}
+
+.modal-body form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  color: #fff;
+}
+
+.modal-body form .form-label {
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.modal-body form .form-control {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  transition: border-color 0.3s ease;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  color: #fff;
+}
+
+.modal-body form .form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+}
+
+.modal-body form .form-control.select {
+  cursor: pointer;
+}
+
+.modal-footer .btn-primary {
+  background-color: #007bff;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.modal-footer .btn-primary:hover {
+  background-color: #0056b3;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.modal-footer .btn-secondary {
+  background-color: #6c757d;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: #5a6268;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fadeInScale 0.5s ease-in-out;
+}
+
+.filter-dropdown {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background: rgba(45, 45, 45, 0.5);
+  color: #fff;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.filter-dropdown:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+.filter-dropdown option {
+  background: rgba(45, 45, 45, 0.5);
+  color: #fff;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.filter-dropdown option:hover {
+  background: rgba(45, 45, 45, 0.7);
 }

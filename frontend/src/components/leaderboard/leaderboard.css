@@ -1,7 +1,31 @@
 .leaderboard-container {
-  margin-top: 5%;
+  margin-top: -50px;
   width: 100%;
-  background-color: #555;
+  min-height: 95.6vh;
+  background: linear-gradient(
+    -45deg,
+    #1a1a1a,
+    #333333,
+    #0d1b2a,
+    #1b263b
+  ); /* Darker gradient */
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .grid-layout-leaderboard {
@@ -9,24 +33,20 @@
   grid-template-columns: 20% 60% 20%;
   width: 100%;
   height: 100%;
-  background-color: #555;
 }
 
 .grid-item-leaderboard {
-  padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .grid-item-leaderboard.middle-leaderboard {
-  background-color: #555;
-  color: #555;
-  padding: 20px;
+  color: #fff;
 }
 
 .grid-item-leaderboard.invisible-leaderboard {
-  background-color: #555;
+  background-color: transparent;
 }
 
 .main-container-leaderboard {
@@ -45,22 +65,65 @@
 }
 
 .search-input-leaderboard {
-  width: 80%;
+  width: 70%;
   padding: 10px;
+  margin-right: 10px;
+  margin-left: 0px;
   border-radius: 5px;
   border: 1px solid #ccc;
   font-size: 1rem;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  color: #fff;
+  animation: fadeInScale 0.5s ease-in-out;
+}
+
+.search-input-leaderboard:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
 }
 
 .list-container-leaderboard {
   width: 100%;
-  background-color: #f8f9fa;
+  min-width: 600px; /* Ensure consistent width */
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  height: 500px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  min-height: 500px;
+  color: #fff;
+  animation: fadeInScale 0.5s ease-in-out;
+  transition: box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.list-container-leaderboard:hover {
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .list-leaderboard {
@@ -71,6 +134,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  width: 100%; /* Ensure consistent width */
 }
 
 .list-item-leaderboard {
@@ -78,10 +142,32 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: #fff;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
   margin-bottom: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 60px;
+}
+
+.list-item-leaderboard:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+.list-item-leaderboard span {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-item-leaderboard span:nth-child(1) {
+  max-width: 80%;
 }
 
 .list-item-placeholder {
@@ -97,22 +183,9 @@
 .pagination-controls {
   display: flex;
   justify-content: center;
+  height: 45px;
   gap: 10px;
   margin-top: 10px;
-}
-
-.pagination-button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: #fff;
-  cursor: pointer;
-}
-
-.pagination-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
 }
 
 .see-profile-button {
@@ -122,4 +195,16 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  transition: box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.see-profile-button:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: #76a520;
 }

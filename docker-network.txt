@@ -1,0 +1,8 @@
+docker network create codequest-network
+docker network connect codequest-network codequest-backend-1
+docker network connect codequest-network codequest-frontend-1
+docker network connect codequest-network codequest-db-1
+docker network connect codequest-network judge0-v1130-server-1
+docker network connect codequest-network judge0-v1130-workers-1
+docker network connect codequest-network judge0-v1130-redis-1
+docker network connect codequest-network judge0-v1130-db-1
