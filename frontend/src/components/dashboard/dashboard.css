@@ -1,7 +1,6 @@
 .dashboard-container {
-  margin-top: 5%;
-  width: 100%;
-  background-color: #555;
+  /* width: 100%; */
+  /* background-color: #555; */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -9,10 +8,9 @@
 
 .grid-layout-dashboard {
   display: grid;
-  grid-template-columns: 20% 60% 20%;
+  grid-template-columns: 10% 80% 10%;
   width: 100%;
   height: auto;
-  background-color: #555;
 }
 
 .grid-item-dashboard {
@@ -23,12 +21,8 @@
 }
 
 .grid-item-dashboard.middle-dashboard {
-  background-color: #555;
+  /* background-color: #555; */
   color: #555;
-}
-
-.grid-item-dashboard.invisible-dashboard {
-  background-color: #555;
 }
 
 .card-dashboard {
@@ -91,6 +85,208 @@
   text-align: center;
   font-size: 1rem;
   color: #555;
+}
+
+@media (max-width: 1400px) {
+  .card-dashboard {
+    min-width: 500px;
+  }
+
+  .grid-layout-dashboard {
+    grid-template-columns: 25% 50% 25%;
+  }
+
+  .progress-bar-dashboard {
+    width: 80%;
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .card-dashboard {
+    min-width: 300px;
+  }
+
+  .grid-layout-dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 10px;
+  }
+
+  .grid-item-dashboard.middle-dashboard {
+    order: 1;
+  }
+}
+.dashboard-container {
+  /* margin-top: -2vh; */
+  width: 100%;
+  min-height: 90vh;
+  background: linear-gradient(
+    -45deg,
+    #1a1a1a,
+    #333333,
+    #0d1b2a,
+    #1b263b
+  ); /* Darker gradient */
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.grid-layout-dashboard {
+  display: grid;
+  grid-template-columns: 20% 60% 20%;
+  width: 100%;
+  height: auto;
+}
+
+.grid-item-dashboard {
+  /* padding: 20px; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.grid-item-dashboard.middle-dashboard {
+  color: #fff;
+}
+
+.grid-item-dashboard.invisible-dashboard {
+  background-color: transparent;
+}
+
+.card-dashboard {
+  width: 100%;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  /* padding: 20px; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* gap: 20px; */
+  min-height: 500px;
+  min-width: 600px;
+  color: #fff;
+  animation: fadeInScale 0.5s ease-in-out;
+  transition: box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.card-dashboard:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.progress-bar-dashboard {
+  width: 90%;
+  height: 20px;
+  background-color: rgba(233, 236, 239, 0.1); /* Darker background */
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 8px rgba(134, 188, 37, 0.6);
+  transition: box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.progress-dashboard {
+  height: 100%;
+  background-color: #86bc25;
+  border-radius: 10px;
+  transition: width 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+  box-shadow: 0 0 8px rgba(134, 188, 37, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-dashboard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.2) 75%
+  );
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.progress-bar-dashboard:hover .progress-dashboard {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.card-text-dashboard {
+  text-align: center;
+}
+
+.inner-card-dashboard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.icon-dashboard {
+  font-size: 1.5rem;
+  color: #155724;
+  background-color: rgba(209, 231, 221, 0.8);
+  padding: 10px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.icon-dashboard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 1400px) {
