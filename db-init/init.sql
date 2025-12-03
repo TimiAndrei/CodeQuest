@@ -61,6 +61,8 @@ DROP TABLE IF EXISTS "challangecomment" CASCADE;
 DROP TABLE IF EXISTS "resourcecomment" CASCADE;
 DROP TABLE IF EXISTS "challangelikes" CASCADE;
 DROP TABLE IF EXISTS "resourcelikes" CASCADE;
+DROP TABLE IF EXISTS "resourcetag" CASCADE;
+DROP TABLE IF EXISTS "commentlikes" CASCADE;
 
 CREATE TABLE "public"."challangelikes" (
     "challenge_id" integer NOT NULL,
@@ -72,6 +74,12 @@ CREATE TABLE "public"."resourcelikes" (
     "resource_id" integer NOT NULL,
     "user_id" integer NOT NULL,
     CONSTRAINT "resourcelikes_pkey" PRIMARY KEY ("resource_id", "user_id")
+) WITH (oids = false);
+
+CREATE TABLE "public"."commentlikes" (
+    "comment_id" integer NOT NULL,
+    "user_id" integer NOT NULL,
+    CONSTRAINT "commentlikes_pkey" PRIMARY KEY ("comment_id", "user_id")
 ) WITH (oids = false);
 
 CREATE TABLE "public"."comments" (
@@ -408,7 +416,12 @@ INSERT INTO tags (name) VALUES
 ('Algorithm Complexity'),
 ('Python'),
 ('JavaScript'),
-('Go');
+('Go'),
+('Data Structures'),
+('Parallel Computing'),
+('Dynamic Programming'),
+('Algorithm Complexity')
+ON CONFLICT DO NOTHING;
 
 -- Insert comments
 INSERT INTO comments (user_id, comment) VALUES
@@ -451,3 +464,70 @@ INSERT INTO resourcetag (resource_id, tag_id) VALUES
 ((SELECT id FROM resources WHERE title = 'Mastering Parentheses Problems'), (SELECT id FROM tags WHERE name = 'Parentheses')),
 ((SELECT id FROM resources WHERE title = 'Mastering Parentheses Problems'), (SELECT id FROM tags WHERE name = 'Algorithm Complexity')),
 ((SELECT id FROM resources WHERE title = 'Go Language Fundamentals'), (SELECT id FROM tags WHERE name = 'Go'));
+
+INSERT INTO resources (title, description, reward_points) VALUES
+('Advanced Data Structures', 
+ 'Understanding advanced data structures is essential for optimizing performance and solving complex problems efficiently. 
+ This resource covers key structures such as:
+
+ - Trie: Used for fast prefix searching and autocomplete functionalities.
+ - Segment Tree: Enables efficient range queries and updates in logarithmic time.
+ - Fenwick Tree (Binary Indexed Tree): Optimizes prefix sum and range queries with an intuitive update mechanism.
+ - Graph Data Structures: Includes adjacency lists, adjacency matrices, and graph traversal algorithms (DFS, BFS).
+
+ Practical applications of these structures include:
+ - Autocomplete and search engine optimizations using Tries.
+ - Fast query processing in databases and computational geometry with Segment Trees.
+ - Efficient pathfinding and network optimizations using Graph algorithms.
+
+ Hands-on exercises are provided to reinforce understanding.', 
+ 5),
+
+('Parallel Computing with Python', 
+ 'Parallel computing enhances computational efficiency by leveraging multiple processing units. 
+ This resource explores:
+
+ - Multiprocessing: Running tasks in parallel using Python’s multiprocessing module.
+ - Threading: Understanding the Global Interpreter Lock (GIL) and multi-threading techniques.
+ - Asynchronous Programming: Implementing async/await patterns for non-blocking execution.
+ - GPU Computing: Utilizing CUDA and OpenCL to accelerate computation.
+
+ Key takeaways:
+ - Learn when to use multi-threading vs. multiprocessing for performance improvements.
+ - Understand common pitfalls such as race conditions and deadlocks.
+ - Implement parallel algorithms such as matrix multiplication and data aggregation.
+
+ Code snippets and real-world case studies ensure practical application of these concepts.', 
+ 200),
+
+('Mastering Dynamic Programming', 
+ 'Dynamic Programming (DP) is a powerful technique for solving optimization problems by breaking them down into subproblems. 
+ This resource covers:
+
+ - Memoization and Tabulation: Understanding top-down and bottom-up DP approaches.
+ - Common DP Problems: 
+   - Longest Increasing Subsequence (LIS)
+   - Knapsack Problem (0/1 and Fractional)
+   - Shortest Path in Weighted Graphs
+ - State Transition and Recursion Optimization: Analyzing recursive relations and transforming them into DP solutions.
+
+ Additional focus on:
+ - Space optimization techniques to reduce memory overhead.
+ - Identifying overlapping subproblems and optimal substructure properties.
+
+ Multiple examples and step-by-step explanations help build a strong DP foundation.', 
+ 100);
+
+
+
+-- Associate tags with resources
+INSERT INTO resourcetag (resource_id, tag_id) VALUES
+((SELECT id FROM resources WHERE title = 'Advanced Data Structures'), (SELECT id FROM tags WHERE name = 'Data Structures')),
+((SELECT id FROM resources WHERE title = 'Advanced Data Structures'), (SELECT id FROM tags WHERE name = 'Algorithm Complexity')),
+
+((SELECT id FROM resources WHERE title = 'Parallel Computing with Python'), (SELECT id FROM tags WHERE name = 'Parallel Computing')),
+((SELECT id FROM resources WHERE title = 'Parallel Computing with Python'), (SELECT id FROM tags WHERE name = 'Python')),
+
+((SELECT id FROM resources WHERE title = 'Mastering Dynamic Programming'), (SELECT id FROM tags WHERE name = 'Dynamic Programming')),
+((SELECT id FROM resources WHERE title = 'Mastering Dynamic Programming'), (SELECT id FROM tags WHERE name = 'Algorithm Complexity'));
+

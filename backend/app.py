@@ -78,9 +78,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # SWAP DATABASE_URL IF RUNNING IN DOCKER
-DATABASE_URL = "postgresql://postgres:admin@localhost:5433/test_db"
+# DATABASE_URL = "postgresql://postgres:admin@localhost:5433/test_db"
 
-# DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
 logger.info(f"DATABASE_URL: {DATABASE_URL}")
 
 JUDGE0_URL = os.getenv("JUDGE0_URL")
@@ -149,6 +149,7 @@ def create_notification(
         message=notification.message,
         link=notification.link,
         challenger_username=notification.challenger_username,
+        challenge_id=notification.challenge_id
     )
     db.add(db_notification)
     db.commit()
@@ -1206,3 +1207,54 @@ def delete_user_challenge(user_id: int, challenge_id: int, db: Session = Depends
     db.delete(user_challenge)
     db.commit()
     return user_challenge
+
+
+@app.get("/users/{user_id}/solved-challenges", response_model=List[ChallengeRead])
+def get_user_solved_challenges(user_id: int, db: Session = Depends(get_db)):
+    solved_challenges = db.query(Challenge).join(UserChallenge).filter(
+        UserChallenge.user_id == user_id).all()
+    challenge_list = []
+    for challenge in solved_challenges:
+        challenge_dict = challenge.__dict__.copy()
+        challenge_dict['tags'] = [tag.tag_id for tag in db.query(
+            ChallengeTag).filter_by(challenge_id=challenge.id).all()]
+        challenge_list.append(challenge_dict)
+    return challenge_list
+
+
+@app.get("/users/{user_id}/sent-challenges", response_model=List[ChallengeRead])
+def get_user_sent_challenges(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    sent_challenges = db.query(Challenge, User.username.label("friend_username")).join(Notification, Notification.challenge_id == Challenge.id).join(
+        User, User.id == Notification.recipient_id).filter(Notification.challenger_username == user.username).all()
+
+    challenge_list = []
+    for challenge, friend_username in sent_challenges:
+        challenge_dict = challenge.__dict__.copy()
+        challenge_dict['friend_username'] = friend_username
+        challenge_dict['tags'] = [tag.tag_id for tag in db.query(
+            ChallengeTag).filter_by(challenge_id=challenge.id).all()]
+        challenge_list.append(challenge_dict)
+    return challenge_list
+
+
+@app.get("/users/{user_id}/received-challenges", response_model=List[ChallengeRead])
+def get_user_received_challenges(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    received_challenges = db.query(Challenge, Notification.challenger_username.label("challenger_username")).join(
+        Notification, Notification.challenge_id == Challenge.id).filter(Notification.recipient_id == user.id).all()
+
+    challenge_list = []
+    for challenge, challenger_username in received_challenges:
+        challenge_dict = challenge.__dict__.copy()
+        challenge_dict['challenger_username'] = challenger_username
+        challenge_dict['tags'] = [tag.tag_id for tag in db.query(
+            ChallengeTag).filter_by(challenge_id=challenge.id).all()]
+        challenge_list.append(challenge_dict)
+    return challenge_list

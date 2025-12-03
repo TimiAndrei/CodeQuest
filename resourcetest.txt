@@ -1,0 +1,17 @@
+Dynamic programming (DP) is a powerful algorithmic paradigm used to solve optimization problems efficiently. 
+ It is particularly useful for problems with overlapping subproblems and optimal substructure. 
+
+ This resource covers:
+ - Memoization vs. Tabulation: Understanding top-down (recursion + caching) vs. bottom-up (iterative DP) approaches.
+ - Common DP Patterns:
+   - Fibonacci sequence and its variations.
+   - Knapsack problem and its real-world applications.
+   - Longest Common Subsequence (LCS) and Edit Distance.
+ - State Transition and Recurrence Relations: Learning to define states, transitions, and base cases for DP problems.
+ - Optimization Techniques:
+   - Space optimization by reducing memory usage.
+   - Using bit masking and optimized loops for efficiency.
+   - Parallelizing DP computations for large-scale problems.
+
+ By mastering these techniques, you will improve your ability to solve complex computational problems efficiently. 
+ The resource includes multiple practice problems and real-world applications to reinforce learning.

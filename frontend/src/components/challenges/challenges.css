@@ -382,3 +382,13 @@
 .filter-dropdown option:hover {
   background: rgba(45, 45, 45, 0.7);
 }
+
+.solved {
+  background-color: rgba(40, 167, 69, 0.2);
+  border-left: 5px solid rgba(40, 167, 69, 0.8);
+}
+
+.list-item-challenges.solved:hover {
+  background-color: rgba(40, 167, 69, 0.2);
+  border-left: 5px solid rgba(40, 167, 69, 0.8);
+}
