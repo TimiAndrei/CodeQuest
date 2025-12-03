@@ -1,14 +1,18 @@
 from datetime import datetime, timedelta, timezone
-from schemas import NotificationCreate, NotificationRead, PointsUpdate, PurchaseCreate, PurchaseRead
+from schemas import CommentLikeCreate, CommentLikeDelete, CommentLikeRead, NotificationCreate, NotificationRead, PointsUpdate, PurchaseCreate, PurchaseRead, TagCreate, TagRead
 import logging
-from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi import FastAPI, HTTPException, Depends, Query, Body
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from models import (
     Base,
+    ChallengeTag,
+    CommentLike,
     Notification,
     Purchase,
     ResourceTag,
+    Tag,
     engine,
     SessionLocal,
     User,
@@ -73,11 +77,13 @@ import secrets
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+# SWAP DATABASE_URL IF RUNNING IN DOCKER
+DATABASE_URL = "postgresql://postgres:admin@localhost:5433/test_db"
+
+# DATABASE_URL = os.getenv("DATABASE_URL")
 logger.info(f"DATABASE_URL: {DATABASE_URL}")
 
 JUDGE0_URL = os.getenv("JUDGE0_URL")
-RAPID_API_KEY = os.getenv("RAPID_API_KEY")
 
 app = FastAPI()
 security = HTTPBasic()
@@ -322,13 +328,40 @@ def create_challenge(ch_data: ChallengeCreate, db: Session = Depends(get_db)):
     db.add(db_challenge)
     db.commit()
     db.refresh(db_challenge)
-    return db_challenge
+
+    # Associate tags with the challenge
+    for tag_id in ch_data.tags:
+        challenge_tag = ChallengeTag(
+            challenge_id=db_challenge.id, tag_id=tag_id)
+        db.add(challenge_tag)
+    db.commit()
+
+    # Fetch the tags to include in the response
+    tag_ids = [tag.tag_id for tag in db.query(
+        ChallengeTag).filter_by(challenge_id=db_challenge.id).all()]
+
+    return {
+        "id": db_challenge.id,
+        "title": db_challenge.title,
+        "description": db_challenge.description,
+        "input": db_challenge.input,
+        "output": db_challenge.output,
+        "difficulty": db_challenge.difficulty,
+        "language": db_challenge.language,
+        "tags": tag_ids
+    }
 
 
 @app.get("/challenges/", response_model=List[ChallengeRead])
 def read_challenges(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     challenges = db.query(Challenge).offset(skip).limit(limit).all()
-    return challenges
+    challenge_list = []
+    for challenge in challenges:
+        challenge_dict = challenge.__dict__.copy()
+        challenge_dict['tags'] = [tag.tag_id for tag in db.query(
+            ChallengeTag).filter_by(challenge_id=challenge.id).all()]
+        challenge_list.append(challenge_dict)
+    return challenge_list
 
 
 @app.get("/challenges/filter", response_model=List[ChallengeRead])
@@ -354,13 +387,62 @@ def filter_challenges(
     return query.all()
 
 
+@app.get("/challenges/like/{challenge_id}", response_model=List[ChallengeLikeRead])
+def get_challenge_like(challenge_id: int, db: Session = Depends(get_db)):
+    likes = db.query(ChallengeLike).filter(
+        ChallengeLike.challenge_id == challenge_id).all()
+    return likes
+
+
+@app.post("/challenges/like", response_model=ChallengeLikeRead)
+def add_or_remove_challenge_like(challenge_like: ChallengeLikeCreate, db: Session = Depends(get_db)):
+    existing_like = db.query(ChallengeLike).filter(
+        ChallengeLike.challenge_id == challenge_like.challenge_id,
+        ChallengeLike.user_id == challenge_like.user_id
+    ).first()
+    if existing_like:
+        db.delete(existing_like)
+        db.commit()
+        return existing_like
+
+    new_like = ChallengeLike(**challenge_like.dict())
+    db.add(new_like)
+    db.commit()
+    db.refresh(new_like)
+    return new_like
+
+
+@app.delete("/challenges/like/", response_model=ChallengeLikeRead)
+def delete_challenge_like(challenge_id: int, user_id: int, db: Session = Depends(get_db)):
+    like = db.query(ChallengeLike).filter(ChallengeLike.challenge_id ==
+                                          challenge_id, ChallengeLike.user_id == user_id).first()
+    if like is None:
+        raise HTTPException(status_code=404, detail="Like not found")
+    db.delete(like)
+    db.commit()
+    return like
+
+
+@app.get("/challenges/likes", response_model=List[dict])
+def get_challenges_likes(db: Session = Depends(get_db)):
+    challenges_likes = db.query(
+        Challenge.id,
+        func.count(ChallengeLike.challenge_id).label("likes")
+    ).outerjoin(ChallengeLike, Challenge.id == ChallengeLike.challenge_id).group_by(Challenge.id).all()
+
+    return [{"challenge_id": challenge.id, "likes": challenge.likes} for challenge in challenges_likes]
+
+
 @app.get("/challenges/{challenge_id}", response_model=ChallengeRead)
 def read_challenge(challenge_id: int, db: Session = Depends(get_db)):
-    db_challenge = db.query(Challenge).filter(
+    challenge = db.query(Challenge).filter(
         Challenge.id == challenge_id).first()
-    if db_challenge is None:
-        raise HTTPException(status_code=404, detail="challenge not found")
-    return db_challenge
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    challenge_dict = challenge.__dict__.copy()
+    challenge_dict['tags'] = [tag.tag_id for tag in db.query(
+        ChallengeTag).filter_by(challenge_id=challenge.id).all()]
+    return challenge_dict
 
 
 @app.put("/challenges/{challenge_id}", response_model=ChallengeRead)
@@ -405,7 +487,49 @@ def create_resource(resource: ResourceCreate, db: Session = Depends(get_db)):
     db.add(db_resource)
     db.commit()
     db.refresh(db_resource)
+
+    # Associate tags with the resource
+    for tag_id in resource.tags:
+        resource_tag = ResourceTag(resource_id=db_resource.id, tag_id=tag_id)
+        db.add(resource_tag)
+    db.commit()
+
     return db_resource
+
+
+@app.get("/tags/", response_model=List[TagRead])
+def read_tags(db: Session = Depends(get_db)):
+    tags = db.query(Tag).all()
+    return tags
+
+
+@app.post("/tags/", response_model=TagRead)
+def create_tag(tag: TagCreate, db: Session = Depends(get_db)):
+    db_tag = db.query(Tag).filter(Tag.name == tag.name).first()
+    if db_tag:
+        raise HTTPException(status_code=400, detail="Tag already exists")
+    new_tag = Tag(name=tag.name)
+    db.add(new_tag)
+    db.commit()
+    db.refresh(new_tag)
+    return new_tag
+
+
+@app.get("/resources/{resource_id}/tags", response_model=List[TagRead])
+def read_resource_tags(resource_id: int, db: Session = Depends(get_db)):
+    resource_tags = db.query(Tag).join(ResourceTag).filter(
+        ResourceTag.resource_id == resource_id).all()
+    return resource_tags
+
+
+@app.get("/resources/likes", response_model=List[dict])
+def get_resources_likes(db: Session = Depends(get_db)):
+    resources_likes = db.query(
+        Resource.id,
+        func.count(ResourceLike.resource_id).label("likes")
+    ).outerjoin(ResourceLike, Resource.id == ResourceLike.resource_id).group_by(Resource.id).all()
+
+    return [{"resource_id": resource.id, "likes": resource.likes} for resource in resources_likes]
 
 
 @app.get("/resources/filter", response_model=List[ResourceRead])
@@ -526,6 +650,17 @@ def submit_code(
     if db_challenge is None:
         raise HTTPException(status_code=404, detail="Challenge not found")
 
+    # Check if the user has already solved this challenge
+    user_challenge = (
+        db.query(UserChallenge)
+        .filter(UserChallenge.user_id == submission.user_id)
+        .filter(UserChallenge.challenge_id == submission.challenge_id)
+        .first()
+    )
+    if user_challenge:
+        raise HTTPException(
+            status_code=400, detail="You have already solved this challenge")
+
     try:
         code_b64 = base64.b64encode(submission.source_code.encode("utf-8")).decode(
             "utf-8"
@@ -540,7 +675,6 @@ def submit_code(
 
     create_submission = requests.post(
         f"{JUDGE0_URL}/submissions?base64_encoded=true&wait=true",
-        headers={"X-RapidAPI-Key": RAPID_API_KEY},
         json={
             "source_code": code_b64,
             "language_id": get_language_id(db_challenge.language),
@@ -562,7 +696,6 @@ def submit_code(
 
     result = requests.get(
         f"{JUDGE0_URL}/submissions/{submission_token}?base64_encoded=false",
-        headers={"X-RapidAPI-Key": RAPID_API_KEY},
     )
 
     if result.status_code != 200:
@@ -616,6 +749,14 @@ def submit_code(
                 print(
                     f"User {user.id} awarded badge: {first_problem_badge.title}")
 
+        # Add the solved challenge to user challenges
+        user_challenge = UserChallenge(
+            user_id=user.id, challenge_id=db_challenge.id, solution=submission.source_code
+        )
+        db.add(user_challenge)
+        db.commit()
+        print(f"User {user.id} solved challenge {db_challenge.id}")
+
     return {
         "status": CodeSubmissionStatus(
             id=result_data["status"]["id"],
@@ -633,6 +774,13 @@ def submit_code(
         "points_awarded": points_awarded,
         "badge_awarded": badge_awarded,
     }
+
+
+@app.get("/challenges/{challenge_id}/tags", response_model=List[TagRead])
+def read_challenge_tags(challenge_id: int, db: Session = Depends(get_db)):
+    tags = db.query(Tag).join(ChallengeTag).filter(
+        ChallengeTag.challenge_id == challenge_id).all()
+    return tags
 
 
 @app.get(
@@ -744,6 +892,47 @@ def update_comment(
     db.refresh(db_comment)
     return db_comment
 
+# comment likes endpoints
+
+
+@app.post("/comments/like", response_model=CommentLikeRead)
+def add_comment_like(comment_like: CommentLikeCreate, db: Session = Depends(get_db)):
+    existing_like = db.query(CommentLike).filter(
+        CommentLike.comment_id == comment_like.comment_id,
+        CommentLike.user_id == comment_like.user_id
+    ).first()
+    if existing_like:
+        db.delete(existing_like)
+        db.commit()
+        return existing_like
+
+    new_like = CommentLike(**comment_like.dict())
+    db.add(new_like)
+    db.commit()
+    db.refresh(new_like)
+    return new_like
+
+
+@app.delete("/comments/like", response_model=CommentLikeDelete)
+def delete_comment_like(comment_like: CommentLikeDelete, db: Session = Depends(get_db)):
+    existing_like = db.query(CommentLike).filter(
+        CommentLike.comment_id == comment_like.comment_id,
+        CommentLike.user_id == comment_like.user_id
+    ).first()
+    if not existing_like:
+        raise HTTPException(status_code=404, detail="Like not found")
+
+    db.delete(existing_like)
+    db.commit()
+    return comment_like
+
+
+@app.get("/comments/{comment_id}/likes", response_model=List[CommentLikeRead])
+def get_comment_likes(comment_id: int, db: Session = Depends(get_db)):
+    likes = db.query(CommentLike).filter(
+        CommentLike.comment_id == comment_id).all()
+    return likes
+
 
 @app.get("/challenges/{challenge_id}/comments", response_model=List[CommentRead])
 def get_challenge_comments(challenge_id: int, db: Session = Depends(get_db)):
@@ -756,19 +945,15 @@ def get_challenge_comments(challenge_id: int, db: Session = Depends(get_db)):
     return comments
 
 
-@app.post(
-    "/challenges/{challenge_id}/comments",
-    response_model=ChallengeCommentRead,
-)
+@app.post("/challenges/{challenge_id}/comments", response_model=ChallengeCommentRead)
 def add_challenge_comment(
-    challenge_id: int, user_id: int, comment: str, db: Session = Depends(get_db)
+    challenge_id: int,
+    challenge_comment: ChallengeCommentCreate = Body(...),
+    db: Session = Depends(get_db)
 ):
-    db_comment = Comment(user_id=user_id, comment=comment)
-    db.add(db_comment)
-    db.commit()
-    db.refresh(db_comment)
+    # Associate the comment with the challenge
     challenge_comment = ChallengeComment(
-        challenge_id=challenge_id, comment_id=db_comment.id
+        challenge_id=challenge_id, comment_id=challenge_comment.comment_id
     )
     db.add(challenge_comment)
     db.commit()
@@ -788,14 +973,12 @@ def get_resource_comments(resource_id: int, db: Session = Depends(get_db)):
 
 @app.post("/resources/{resource_id}/comments", response_model=ResourceCommentRead)
 def add_resource_comment(
-    resource_id: int, user_id: int, comment: str, db: Session = Depends(get_db)
+    resource_comment: ResourceCommentCreate = Body(...),
+    db: Session = Depends(get_db)
 ):
-    db_comment = Comment(user_id=user_id, comment=comment)
-    db.add(db_comment)
-    db.commit()
-    db.refresh(db_comment)
+    # Associate the comment with the resource
     resource_comment = ResourceComment(
-        resource_id=resource_id, comment_id=db_comment.id
+        resource_id=resource_comment.resource_id, comment_id=resource_comment.comment_id
     )
     db.add(resource_comment)
     db.commit()
@@ -813,6 +996,8 @@ def delete_comment(comment_id: int, db: Session = Depends(get_db)):
     comment = db.query(Comment).filter(Comment.id == comment_id).first()
     if comment is None:
         raise HTTPException(status_code=404, detail="Comment not found")
+
+    db.query(CommentLike).filter(CommentLike.comment_id == comment_id).delete()
     db.delete(comment)
     db.commit()
     return comment
@@ -889,7 +1074,7 @@ def update_reward_points(user_id: int, points_update: PointsUpdate, db: Session 
 
     user.reward_points += points_update.points
     # Reset the reward timer to 24 hours from now
-    user.reward_timer = datetime.now(timezone.utc) + timedelta(minutes=1)
+    user.reward_timer = datetime.now(timezone.utc) + timedelta(hours=24)
     db.commit()
     return {"message": "Reward points updated successfully", "points": points_update.points}
 
@@ -945,6 +1130,24 @@ def add_resource_like(resource_id: int, user_id: int, db: Session = Depends(get_
     db.add(like)
     db.commit()
     return like
+
+
+@app.post("/resources/like", response_model=ResourceLikeRead)
+def add_or_remove_resource_like(resource_like: ResourceLikeCreate, db: Session = Depends(get_db)):
+    existing_like = db.query(ResourceLike).filter(
+        ResourceLike.resource_id == resource_like.resource_id,
+        ResourceLike.user_id == resource_like.user_id
+    ).first()
+    if existing_like:
+        db.delete(existing_like)
+        db.commit()
+        return existing_like
+
+    new_like = ResourceLike(**resource_like.dict())
+    db.add(new_like)
+    db.commit()
+    db.refresh(new_like)
+    return new_like
 
 
 @app.delete("/resources/like/", response_model=ResourceLikeRead)
