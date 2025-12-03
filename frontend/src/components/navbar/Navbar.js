@@ -13,77 +13,98 @@ function NavBar() {
     <nav className="navbar">
       <div className="nav-container">
         <NavLink to="/" className="nav-logo">
-          <span className="logo-text">CodeQuest</span>
+          <img
+            src="/logo_cq.png" // Public folder path
+            alt="CodeQuest Logo"
+            className="nav-logo-image"
+          />
         </NavLink>
 
         <ul className={click ? "nav-menu active" : "nav-menu"}>
-        {user && (
-          <li className="nav-item">
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                isActive ? "nav-links active" : "nav-links"
-              }
-              onClick={handleClick}
-            >
-              Dashboard
-            </NavLink>
-          </li>
-        )}
-        {user && (
-          <li className="nav-item">
-            <NavLink
-              to="/challenges"
-              className={({ isActive }) =>
-                isActive ? "nav-links active" : "nav-links"
-              }
-              onClick={handleClick}
-            >
-              Challenges
-            </NavLink>
-          </li>
-        )}
-        {user && (
-          <li className="nav-item">
-            <NavLink
-              to="/resources"
-              className={({ isActive }) =>
-                isActive ? "nav-links active" : "nav-links"
-              }
-              onClick={handleClick}
-            >
-              Resources
-            </NavLink>
-          </li>
-        )}
-        {user && (
-          <li className="nav-item">
-            <NavLink
-              to="/leaderboard"
-              className={({ isActive }) =>
-                isActive ? "nav-links active" : "nav-links"
-              }
-              onClick={handleClick}
-            >
-              Leaderboard
-            </NavLink>
-          </li>
-        )}
+          {user && (
+            <li className="nav-item">
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  isActive ? "nav-links active" : "nav-links"
+                }
+                onClick={handleClick}
+              >
+                Dashboard
+              </NavLink>
+            </li>
+          )}
+          {user && (
+            <li className="nav-item">
+              <NavLink
+                to="/challenges"
+                className={({ isActive }) =>
+                  isActive ? "nav-links active" : "nav-links"
+                }
+                onClick={handleClick}
+              >
+                Challenges
+              </NavLink>
+            </li>
+          )}
+          {user && (
+            <li className="nav-item">
+              <NavLink
+                to="/resources"
+                className={({ isActive }) =>
+                  isActive ? "nav-links active" : "nav-links"
+                }
+                onClick={handleClick}
+              >
+                Resources
+              </NavLink>
+            </li>
+          )}
+          {user && (
+            <li className="nav-item">
+              <NavLink
+                to="/leaderboard"
+                className={({ isActive }) =>
+                  isActive ? "nav-links active" : "nav-links"
+                }
+                onClick={handleClick}
+              >
+                Leaderboard
+              </NavLink>
+            </li>
+          )}
+          {user && (
+            <li className="nav-item">
+              <NavLink
+                to="/profile"
+                className={({ isActive }) =>
+                  isActive ? "nav-links active" : "nav-links"
+                }
+                onClick={handleClick}
+              >
+                Profile
+              </NavLink>
+            </li>
+          )}
           {user && (
             <>
               <li className="nav-item">
-                <span className="nav-links">{user.username.toUpperCase()}</span>
+                <span className="nav-links">
+                  {user.username.toUpperCase()}
+                </span>
               </li>
               <li className="nav-item">
-              <NavLink
-              to="/"
-              className={({ isActive }) =>
-                isActive ? "nav-links active logout-link" : "nav-links logout-link"
-              }
-              onClick={logout}
-            >
-              Logout
-            </NavLink>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    isActive
+                      ? "nav-links active logout-link"
+                      : "nav-links logout-link"
+                  }
+                  onClick={logout}
+                >
+                  Logout
+                </NavLink>
               </li>
             </>
           )}

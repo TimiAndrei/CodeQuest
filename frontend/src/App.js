@@ -1,7 +1,6 @@
 import "./App.css";
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import UsersPage from "./components/user/UsersPage";
 import Navbar from "./components/navbar/Navbar";
 import Dashboard from "./components/dashboard/Dashboard";
 import Challenges from "./components/challenges/Challenges";
@@ -13,6 +12,9 @@ import LandingPage from "./components/landingpage/LandingPage";
 import { AuthProvider } from "./components/authentification/AuthContext";
 import PrivateRoute from "./components/authentification/PrivateRoute";
 import LoginPage from "./components/authentification/LoginPage";
+import SignUpPage from "./components/authentification/SignUpPage";
+import UserPage from "./components/userpage/UserPage";
+
 function App() {
   return (
     <div className="App">
@@ -21,6 +23,7 @@ function App() {
           <Navbar />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
             <Route path="/" element={<LandingPage />} />
             <Route
               path="/dashboard"
@@ -70,6 +73,15 @@ function App() {
                 </PrivateRoute>
               }
             />
+              <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <UserPage />
+                </PrivateRoute>
+              }
+            />
+
           </Routes>
         </AuthProvider>
       </Router>
