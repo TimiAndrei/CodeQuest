@@ -126,6 +126,22 @@ function UsersPage() {
     }
   };
 
+  const handleDeleteFriend = async (friendId) => {
+    try {
+      await axios.delete(`http://localhost:8000/users/${user.id}/friends`, {
+        params: { friend_username: friendId },
+      });
+      const response = await axios.get(
+        `http://localhost:8000/users/${user.id}/friends`
+      );
+      setFriends(response.data);
+      toast.success("Friend deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting friend:", err);
+      toast.error("Failed to delete friend.");
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleSearch();
@@ -146,12 +162,14 @@ function UsersPage() {
     }
   };
 
-  const filteredAdminUsers = allUsers.filter((u) =>
-    u.username.toLowerCase().includes(adminSearchTerm.toLowerCase())
+  const filteredAdminUsers = allUsers.filter(
+    (u) =>
+      u.username.toLowerCase().includes(adminSearchTerm.toLowerCase()) &&
+      u.id !== user.id
   );
 
   if (loading) {
-    return <div>Loading user profile...</div>;
+    return <div className="loading-container"></div>;
   }
 
   if (error) {
@@ -161,88 +179,96 @@ function UsersPage() {
   return (
     <div className="user-page-container">
       <ToastContainer />
-      <div className="user-profile-card">
-        <h2>User Profile</h2>
-        {isEditing ? (
-          <div className="user-edit-form">
-            <label>
-              Username:
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-              />
-            </label>
-            <label>
-              Email:
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-            </label>
-            <div className="user-actions">
-              <button onClick={handleSave} className="button-save">
-                Save
-              </button>
-              <button onClick={handleEditToggle} className="button-cancel">
-                Cancel
-              </button>
+      <div className="user-page-grid">
+        <div className="user-profile-card">
+          <h2>User Profile</h2>
+          {isEditing ? (
+            <div className="user-edit-form">
+              <label>
+                Username:
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                />
+              </label>
+              <label>
+                Email:
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                />
+              </label>
+              <div className="user-actions">
+                <button onClick={handleSave} className="button-save">
+                  Save
+                </button>
+                <button onClick={handleEditToggle} className="button-cancel">
+                  Cancel
+                </button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="user-profile-details">
-            <p>
-              <strong>Username:</strong> {profile.username}
-            </p>
-            <p>
-              <strong>Role:</strong> {profile.role}
-            </p>
-            <p>
-              <strong>Email:</strong> {profile.email}
-            </p>
-            <div className="user-actions">
-              <button onClick={handleEditToggle} className="button-edit">
-                Edit
-              </button>
+          ) : (
+            <div className="user-profile-details">
+              <p>
+                <strong>Username:</strong> {profile.username}
+              </p>
+              <p>
+                <strong>Role:</strong> {profile.role}
+              </p>
+              <p>
+                <strong>Email:</strong> {profile.email}
+              </p>
+              <div className="user-actions">
+                <button onClick={handleEditToggle} className="button-edit">
+                  Edit
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-      <div className="friends-section">
-        <h3>Friends</h3>
-        <ul>
-          {friends.map((friend) => (
-            <li key={friend.id}>{friend.username}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="search-section">
-        <h3>Search Users</h3>
-        <div className="search-bar">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Search by username"
-          />
-          <button onClick={handleSearch} className="button-search">
-            Search
-          </button>
+          )}
         </div>
-        <div className="search-results">
+        <div className="search-section">
+          <h3>Search Users</h3>
+          <div className="search-bar">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Search by username"
+            />
+          </div>
+          <div className="search-results">
+            <ul>
+              {searchResults.map((result) => (
+                <li key={result.id}>
+                  {" "}
+                  {result.username}{" "}
+                  <button
+                    onClick={() => handleAddFriend(result.username)}
+                    className="button-add-friend"
+                  >
+                    Add Friend
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="friends-section">
+          <h3>Friends</h3>
           <ul>
-            {searchResults.map((result) => (
-              <li key={result.id}>
-                {result.username}{" "}
+            {friends.map((friend) => (
+              <li key={friend.id}>
+                {friend.username}
                 <button
-                  onClick={() => handleAddFriend(result.username)}
-                  className="button-add-friend"
+                  onClick={() => handleDeleteFriend(friend.username)}
+                  className="demote-button"
                 >
-                  Add Friend
+                  Remove Friend
                 </button>
               </li>
             ))}
@@ -265,7 +291,8 @@ function UsersPage() {
               <tr>
                 <th>Username</th>
                 <th>Role</th>
-                <th>Actions</th>
+                <th>Promote</th>
+                <th>Demote</th>
               </tr>
             </thead>
             <tbody>
@@ -277,31 +304,33 @@ function UsersPage() {
                     {u.role === "user" && (
                       <button
                         onClick={() => handleRoleChange(u.id, "expert")}
-                        className="button-role-change"
+                        className="promote-button"
                       >
                         Make Expert
                       </button>
                     )}
                     {u.role === "expert" && (
-                      <>
-                        <button
-                          onClick={() => handleRoleChange(u.id, "admin")}
-                          className="button-role-change"
-                        >
-                          Make Admin
-                        </button>
-                        <button
-                          onClick={() => handleRoleChange(u.id, "user")}
-                          className="button-role-change"
-                        >
-                          Demote
-                        </button>
-                      </>
+                      <button
+                        onClick={() => handleRoleChange(u.id, "admin")}
+                        className="promote-button"
+                      >
+                        Make Admin
+                      </button>
+                    )}
+                  </td>
+                  <td>
+                    {u.role === "expert" && (
+                      <button
+                        onClick={() => handleRoleChange(u.id, "user")}
+                        className="demote-button"
+                      >
+                        Demote
+                      </button>
                     )}
                     {u.role === "admin" && (
                       <button
                         onClick={() => handleRoleChange(u.id, "expert")}
-                        className="button-role-change"
+                        className="demote-button"
                       >
                         Demote
                       </button>

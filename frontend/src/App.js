@@ -1,5 +1,6 @@
 import "./App.css";
 import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar";
 import Dashboard from "./components/dashboard/Dashboard";
@@ -14,6 +15,7 @@ import PrivateRoute from "./components/authentification/PrivateRoute";
 import LoginPage from "./components/authentification/LoginPage";
 import SignUpPage from "./components/authentification/SignUpPage";
 import UserPage from "./components/userpage/UserPage";
+import Inbox from "./components/inbox/Inbox";
 
 function App() {
   return (
@@ -73,7 +75,7 @@ function App() {
                 </PrivateRoute>
               }
             />
-              <Route
+            <Route
               path="/profile"
               element={
                 <PrivateRoute>
@@ -81,7 +83,14 @@ function App() {
                 </PrivateRoute>
               }
             />
-
+            <Route
+              path="/inbox"
+              element={
+                <PrivateRoute>
+                  <Inbox />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </AuthProvider>
       </Router>
