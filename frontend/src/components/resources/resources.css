@@ -136,9 +136,13 @@
   width: 100%; /* Ensure consistent width */
 }
 
+.resource-title {
+  margin-left: 125px;
+}
+
 .list-item-resources {
   display: flex;
-  justify-content: center; /* Center content horizontally */
+  justify-content: space-between;
   align-items: center;
   padding: 10px;
   background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
@@ -149,35 +153,6 @@
   border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
   margin-bottom: 10px;
   min-height: 60px;
-  position: relative; /* Add relative positioning */
-}
-
-.resource-title {
-  flex: 1;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: absolute; /* Center the title absolutely */
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.button-resources {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  background-color: #86bc25;
-  color: #fff;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  transition: box-shadow 0.3s ease, border 0.3s ease;
-  position: absolute; /* Position buttons absolutely */
-  right: 10px; /* Adjust as needed */
 }
 
 .list-item-resources:hover {
@@ -244,11 +219,6 @@
   transition: box-shadow 0.3s ease, border 0.3s ease;
 }
 
-.buy-button {
-  width: 120px; /* Fixed size */
-  margin-right: 83px; /* Margin to separate from delete button */
-}
-
 .button-resources:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -261,9 +231,4 @@
 
 .delete-button:hover {
   background-color: #c82333;
-}
-
-Button:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
 }

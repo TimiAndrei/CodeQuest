@@ -37,7 +37,6 @@ class User(Base):
     role = Column(String)
     score = Column(Integer, default=0)
     reward_points = Column(Integer, default=0)
-    reward_timer = Column(DateTime, default=datetime.utcnow)
     badges = relationship("Badge", secondary="userbadge",
                           back_populates="users")
 
@@ -91,7 +90,6 @@ class Resource(Base):
     description = Column(String)
     tags = relationship("Tag", secondary="resourcetag",
                         back_populates="resources")
-    reward_points = Column(Integer, default=0)
 
 
 class ResourceTag(Base):
@@ -117,7 +115,7 @@ class UserChallenge(Base):
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     challenge_id = Column(Integer, ForeignKey(
         "challenges.id"), primary_key=True)
-    solution = Column(String)
+
 
 
 class Notification(Base):
@@ -160,22 +158,5 @@ class ResourceComment(Base):
 
     resource_id = Column(Integer, ForeignKey("resources.id"), primary_key=True)
     comment_id = Column(Integer, ForeignKey("comments.id"), primary_key=True)
-
-
-class Purchase(Base):
-    __tablename__ = "purchases"
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    resource_id = Column(Integer, ForeignKey("resources.id"), primary_key=True)
-    purchase_date = Column(DateTime, default=datetime.utcnow)
-
-class ResourceLike(Base):
-    __tablename__ = "resourcelikes"
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    resource_id = Column(Integer, ForeignKey("resources.id"), primary_key=True)
-
-class ChallengeLike(Base):
-    __tablename__ = "challengelikes"
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    challenge_id = Column(Integer, ForeignKey("challenges.id"), primary_key=True)
 
 Base.metadata.create_all(bind=engine)

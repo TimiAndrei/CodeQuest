@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta, timezone
-from schemas import NotificationCreate, NotificationRead, PointsUpdate, PurchaseCreate, PurchaseRead
+from schemas import NotificationCreate, NotificationRead
 import logging
 from fastapi import FastAPI, HTTPException, Depends, Query
 from typing import List, Optional
@@ -7,7 +6,6 @@ from sqlalchemy.orm import Session
 from models import (
     Base,
     Notification,
-    Purchase,
     ResourceTag,
     engine,
     SessionLocal,
@@ -20,9 +18,6 @@ from models import (
     Comment,
     ChallengeComment,
     ResourceComment,
-    ChallengeLike,
-    ResourceLike,
-    UserChallenge
 )
 from schemas import (
     CodeSubmissionStatus,
@@ -51,12 +46,6 @@ from schemas import (
     ChallengeCommentRead,
     ResourceCommentCreate,
     ResourceCommentRead,
-    ChallengeLikeCreate,
-    ChallengeLikeRead,
-    ResourceLikeCreate,
-    ResourceLikeRead,
-    UserChallengeCreate,
-    UserChallengeRead,
 )
 import requests
 import base64
@@ -397,11 +386,8 @@ def read_resources(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)
 
 @app.post("/resources/", response_model=ResourceRead)
 def create_resource(resource: ResourceCreate, db: Session = Depends(get_db)):
-    db_resource = Resource(
-        title=resource.title,
-        description=resource.description,
-        reward_points=resource.reward_points
-    )
+    db_resource = Resource(title=resource.title,
+                           description=resource.description)
     db.add(db_resource)
     db.commit()
     db.refresh(db_resource)
@@ -808,16 +794,6 @@ def get_user_comments(user_id: int, db: Session = Depends(get_db)):
     return comments
 
 
-@app.delete("/comments/{comment_id}", response_model=CommentRead)
-def delete_comment(comment_id: int, db: Session = Depends(get_db)):
-    comment = db.query(Comment).filter(Comment.id == comment_id).first()
-    if comment is None:
-        raise HTTPException(status_code=404, detail="Comment not found")
-    db.delete(comment)
-    db.commit()
-    return comment
-
-
 @app.delete("/users/{user_id}/friends", response_model=FriendCreate)
 def delete_friend(user_id: int, friend_username: str = Query(...), db: Session = Depends(get_db)):
     friend = db.query(User).filter(User.username == friend_username).first()
@@ -839,167 +815,3 @@ def delete_friend(user_id: int, friend_username: str = Query(...), db: Session =
     db.delete(existing_friend)
     db.commit()
     return existing_friend
-
-
-@app.post("/purchases/", response_model=PurchaseRead)
-def create_purchase(purchase: PurchaseCreate, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == purchase.user_id).first()
-    resource = db.query(Resource).filter(
-        Resource.id == purchase.resource_id).first()
-
-    if not user or not resource:
-        raise HTTPException(
-            status_code=404, detail="User or Resource not found")
-
-    if user.reward_points < resource.reward_points:
-        raise HTTPException(status_code=400, detail="Not enough reward points")
-
-    user.reward_points -= resource.reward_points
-    new_purchase = Purchase(user_id=purchase.user_id,
-                            resource_id=purchase.resource_id)
-    db.add(new_purchase)
-    db.commit()
-    db.refresh(new_purchase)
-    return new_purchase
-
-
-@app.get("/users/{user_id}/purchases", response_model=List[PurchaseRead])
-def read_purchases(user_id: int, db: Session = Depends(get_db)):
-    purchases = db.query(Purchase).filter(Purchase.user_id == user_id).all()
-    purchased_resource_ids = [purchase.resource_id for purchase in purchases]
-
-    # Include free resources
-    free_resources = db.query(Resource).filter(
-        Resource.reward_points == 0).all()
-
-    for resource in free_resources:
-        if resource.id not in purchased_resource_ids:
-            purchased_resource_ids.append(resource.id)
-            purchases.append(Purchase(
-                user_id=user_id, resource_id=resource.id, purchase_date=datetime.utcnow()))
-
-    return purchases
-
-
-@app.post("/users/{user_id}/reward")
-def update_reward_points(user_id: int, points_update: PointsUpdate, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    user.reward_points += points_update.points
-    # Reset the reward timer to 24 hours from now
-    user.reward_timer = datetime.now(timezone.utc) + timedelta(minutes=1)
-    db.commit()
-    return {"message": "Reward points updated successfully", "points": points_update.points}
-
-
-@app.get("/users/{user_id}/reward-timer")
-def get_reward_timer(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # Calculate the remaining time for the reward timer
-    remaining_time = (user.reward_timer -
-                      datetime.now(timezone.utc)).total_seconds() / 3600
-    return {"timer": max(0, remaining_time)}
-
-
-@app.get("/challanges/like/{challenge_id}", response_model=List[ChallengeLikeRead])
-def get_challenge_like(challenge_id: int, db: Session = Depends(get_db)):
-    likes = db.query(ChallengeLike).filter(
-        ChallengeLike.challenge_id == challenge_id).all()
-    return likes
-
-
-@app.post("/challanges/like/{challenge_id}", response_model=ChallengeLikeRead)
-def add_challenge_like(challenge_id: int, user_id: int, db: Session = Depends(get_db)):
-    like = ChallengeLike(user_id=user_id, challenge_id=challenge_id)
-    db.add(like)
-    db.commit()
-    return like
-
-
-@app.delete("/challanges/like/", response_model=ChallengeLikeRead)
-def delete_challenge_like(challenge_id: int, user_id: int, db: Session = Depends(get_db)):
-    like = db.query(ChallengeLike).filter(ChallengeLike.challenge_id ==
-                                          challenge_id, ChallengeLike.user_id == user_id).first()
-    if like is None:
-        raise HTTPException(status_code=404, detail="Like not found")
-    db.delete(like)
-    db.commit()
-    return like
-
-
-@app.get("/resources/like/{resource_id}", response_model=List[ResourceLikeRead])
-def get_resource_like(resource_id: int, db: Session = Depends(get_db)):
-    likes = db.query(ResourceLike).filter(
-        ResourceLike.resource_id == resource_id).all()
-    return likes
-
-
-@app.post("/resources/like/{resource_id}", response_model=ResourceLikeRead)
-def add_resource_like(resource_id: int, user_id: int, db: Session = Depends(get_db)):
-    like = ResourceLike(user_id=user_id, resource_id=resource_id)
-    db.add(like)
-    db.commit()
-    return like
-
-
-@app.delete("/resources/like/", response_model=ResourceLikeRead)
-def delete_resource_like(resource_id: int, user_id: int, db: Session = Depends(get_db)):
-    like = db.query(ResourceLike).filter(ResourceLike.resource_id ==
-                                         resource_id, ResourceLike.user_id == user_id).first()
-    if like is None:
-        raise HTTPException(status_code=404, detail="Like not found")
-    db.delete(like)
-    db.commit()
-    return like
-
-
-@app.get("/users/{user_id}/likes")
-def get_user_likes(user_id: int, db: Session = Depends(get_db)):
-    user_likes = {
-        "challenges": db.query(ChallengeLike).filter(ChallengeLike.user_id == user_id).all(),
-        "resources": db.query(ResourceLike).filter(ResourceLike.user_id == user_id).all()
-    }
-    return user_likes
-
-
-@app.get("/users/challenges/", response_model=List[UserChallengeRead])
-def get_user_challenges(user_id: int, db: Session = Depends(get_db)):
-    user_challenges = db.query(UserChallenge).filter(
-        UserChallenge.user_id == user_id).all()
-    return user_challenges
-
-
-@app.post("/users/challenges/", response_model=UserChallengeRead)
-def add_user_challenge(user_id: int, challenge_id: int, solution: str, db: Session = Depends(get_db)):
-    user_challenge = UserChallenge(
-        user_id=user_id, challenge_id=challenge_id, solution=solution)
-    db.add(user_challenge)
-    db.commit()
-    return user_challenge
-
-
-@app.put("/users/challenges/", response_model=UserChallengeRead)
-def update_user_challenge(user_id: int, challenge_id: int, solution: str, db: Session = Depends(get_db)):
-    user_challenge = db.query(UserChallenge).filter(
-        UserChallenge.user_id == user_id, UserChallenge.challenge_id == challenge_id).first()
-    if user_challenge is None:
-        raise HTTPException(status_code=404, detail="Challenge not found")
-    user_challenge.solution = solution
-    db.commit()
-    return user_challenge
-
-
-@app.delete("/users/challenges/", response_model=UserChallengeRead)
-def delete_user_challenge(user_id: int, challenge_id: int, db: Session = Depends(get_db)):
-    user_challenge = db.query(UserChallenge).filter(
-        UserChallenge.user_id == user_id, UserChallenge.challenge_id == challenge_id).first()
-    if user_challenge is None:
-        raise HTTPException(status_code=404, detail="Challenge not found")
-    db.delete(user_challenge)
-    db.commit()
-    return user_challenge

@@ -59,20 +59,6 @@ DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "comments" CASCADE;
 DROP TABLE IF EXISTS "challangecomment" CASCADE;
 DROP TABLE IF EXISTS "resourcecomment" CASCADE;
-DROP TABLE IF EXISTS "challangelikes" CASCADE;
-DROP TABLE IF EXISTS "resourcelikes" CASCADE;
-
-CREATE TABLE "public"."challangelikes" (
-    "challenge_id" integer NOT NULL,
-    "user_id" integer NOT NULL,
-    CONSTRAINT "challangelikes_pkey" PRIMARY KEY ("challenge_id", "user_id")
-) WITH (oids = false);
-
-CREATE TABLE "public"."resourcelikes" (
-    "resource_id" integer NOT NULL,
-    "user_id" integer NOT NULL,
-    CONSTRAINT "resourcelikes_pkey" PRIMARY KEY ("resource_id", "user_id")
-) WITH (oids = false);
 
 CREATE TABLE "public"."comments" (
     "id" integer DEFAULT nextval('comments_id_seq') NOT NULL,
@@ -158,7 +144,6 @@ CREATE TABLE "public"."userbadge" (
 CREATE TABLE "public"."userchallenge" (
     "user_id" integer NOT NULL,
     "challenge_id" integer NOT NULL,
-    "solution" character varying(5000) NOT NULL,
     CONSTRAINT "userchallenge_pkey" PRIMARY KEY ("user_id", "challenge_id")
 ) WITH (oids = false);
 
@@ -170,7 +155,6 @@ CREATE TABLE "public"."users" (
     "role" character varying(20) NOT NULL,
     "score" integer DEFAULT '0',
     "reward_points" integer DEFAULT '0',
-    "reward_timer" timestamp with time zone DEFAULT now(), 
     CONSTRAINT "users_email_key" UNIQUE ("email"),
     CONSTRAINT "users_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "users_username_key" UNIQUE ("username")
@@ -221,12 +205,6 @@ ALTER TABLE ONLY "public"."comments" ADD CONSTRAINT "comments_user_id_fkey" FORE
 
 ALTER TABLE ONLY "public"."purchases" ADD CONSTRAINT "purchases_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."purchases" ADD CONSTRAINT "purchases_resource_id_fkey" FOREIGN KEY (resource_id) REFERENCES resources(id) ON DELETE CASCADE NOT DEFERRABLE;
-
-ALTER TABLE ONLY "public"."challangelikes" ADD CONSTRAINT "challangelikes_challenge_id_fkey" FOREIGN KEY (challenge_id) REFERENCES challenges(id) ON DELETE CASCADE NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."challangelikes" ADD CONSTRAINT "challangelikes_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
-
-ALTER TABLE ONLY "public"."resourcelikes" ADD CONSTRAINT "resourcelikes_resource_id_fkey" FOREIGN KEY (resource_id) REFERENCES resources(id) ON DELETE CASCADE NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."resourcelikes" ADD CONSTRAINT "resourcelikes_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
 
 INSERT INTO badges (title, description) VALUES 
 ('Beginner Badge', 'Awarded for starting out'),
@@ -395,10 +373,10 @@ INSERT INTO resources (title, description) VALUES
  - Testing techniques for robust code.' 
 );
 
-INSERT INTO users (username, email, password, role, score, reward_points, reward_timer) VALUES
-('user1', 'user1@example.com', '$2y$10$SRGvDkhxmYo/jtIccmmHK.LAeULCdfhnTgu63i0z/a8cCj3/sBZsG', 'admin', 100, 0, now()),
-('user2', 'user2@example.com', 'hashed_password2', 'user', 50, 0, now()),
-('user3', 'user3@example.com', 'hashed_password3', 'user', 75, 0, now());
+INSERT INTO users (username, email, password, role, score) VALUES
+('user1', 'user1@example.com', '$2y$10$SRGvDkhxmYo/jtIccmmHK.LAeULCdfhnTgu63i0z/a8cCj3/sBZsG', 'admin', 100),
+('user2', 'user2@example.com', 'hashed_password2', 'user', 50),
+('user3', 'user3@example.com', 'hashed_password3', 'user', 75);
 
 -- Insert tags
 INSERT INTO tags (name) VALUES 

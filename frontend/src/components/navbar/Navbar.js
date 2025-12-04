@@ -10,7 +10,6 @@ function NavBar() {
   const [click, setClick] = useState(false);
   const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState([]);
-  const [rewardTimer, setRewardTimer] = useState(null);
 
   const handleClick = () => setClick(!click);
 
@@ -25,26 +24,12 @@ function NavBar() {
         console.error("Error fetching notifications:", error);
       }
     };
-
-    const fetchRewardTimer = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:8000/users/${user.id}/reward-timer`
-        );
-        setRewardTimer(response.data.timer);
-      } catch (error) {
-        console.error("Error fetching reward timer:", error);
-      }
-    };
-
     if (user) {
       fetchNotifications();
-      fetchRewardTimer();
     }
   }, [user]);
 
-  const unreadCount =
-    notifications.length + (rewardTimer !== null && rewardTimer <= 0 ? 1 : 0);
+  const unreadCount = notifications.length;
 
   return (
     <nav className="navbar">
