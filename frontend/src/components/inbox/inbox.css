@@ -50,7 +50,7 @@
 
 .card-inbox {
   width: 100%;
-  min-width: 700px; /* Ensure consistent width */
+  min-width: 800px; /* Ensure consistent width */
   background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
@@ -129,10 +129,6 @@
 .notification-message {
   float: left;
   margin-left: 0;
-  max-width: 500px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .button-container-inbox {
@@ -207,130 +203,4 @@
   .grid-item-inbox.invisible-inbox {
     display: none;
   }
-}
-
-.button-inbox.reward-button {
-  background-color: #86bc25;
-  color: #fff;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  transition: box-shadow 0.3s ease, border 0.3s ease;
-  margin-left: 10px;
-}
-
-.button-inbox.reward-button:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: #76a520;
-}
-
-.wheel-container {
-  position: relative;
-  width: 300px;
-  height: 450px;
-  margin: 0 auto;
-  margin-top: -35px;
-}
-
-.wheel {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  position: relative;
-  overflow: hidden;
-  border: 4px solid #fff;
-  background: #333;
-  transition: transform 5s ease-out;
-}
-
-.slice {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  clip-path: polygon(50% 50%, 100% 0, 100% 100%);
-  transform-origin: 50% 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.slice:nth-child(odd) {
-  background: linear-gradient(45deg, #dc3545, #c82333);
-}
-
-.slice:nth-child(even) {
-  background: linear-gradient(45deg, #86bc25, #76a520);
-}
-
-/* Rotate each slice properly */
-.slice:nth-child(1) {
-  transform: rotate(0deg);
-}
-.slice:nth-child(2) {
-  transform: rotate(36deg);
-}
-.slice:nth-child(3) {
-  transform: rotate(72deg);
-}
-.slice:nth-child(4) {
-  transform: rotate(108deg);
-}
-.slice:nth-child(5) {
-  transform: rotate(144deg);
-}
-.slice:nth-child(6) {
-  transform: rotate(180deg);
-}
-.slice:nth-child(7) {
-  transform: rotate(216deg);
-}
-.slice:nth-child(8) {
-  transform: rotate(252deg);
-}
-.slice:nth-child(9) {
-  transform: rotate(288deg);
-}
-.slice:nth-child(10) {
-  transform: rotate(324deg);
-}
-
-.slice span {
-  transform: rotate(-36deg);
-  text-align: center;
-}
-
-.pin {
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  width: 10px;
-  height: 30px;
-  background-color: red;
-  border-radius: 5px;
-  transform: translateX(-50%);
-  z-index: 2;
-}
-
-.slice span {
-  position: absolute;
-  top: 25%;
-  left: 50%;
-  transform: translateX(-50%) rotate(90deg);
-  transform-origin: center;
-  font-size: 14px;
-  font-weight: bold;
-  color: white;
-  text-align: center;
-  width: 80%;
-  white-space: nowrap;
 }

@@ -80,7 +80,7 @@ function LandingPage() {
               </button>
               <button
                 className={`tab-button ${
-                  activeTab === "resources" ? "active" : "inactive"
+                  activeTab === "resources" ? "active" : ""
                 }`}
                 onClick={() => handleTabChange("resources")}
                 disabled={activeTab === "resources"}

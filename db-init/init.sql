@@ -59,29 +59,6 @@ DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "comments" CASCADE;
 DROP TABLE IF EXISTS "challangecomment" CASCADE;
 DROP TABLE IF EXISTS "resourcecomment" CASCADE;
-DROP TABLE IF EXISTS "challangelikes" CASCADE;
-DROP TABLE IF EXISTS "resourcelikes" CASCADE;
-DROP TABLE IF EXISTS "resourcetag" CASCADE;
-DROP TABLE IF EXISTS "commentlikes" CASCADE;
-DROP TABLE IF EXISTS "challengehistory" CASCADE;
-
-CREATE TABLE "public"."challangelikes" (
-    "challenge_id" integer NOT NULL,
-    "user_id" integer NOT NULL,
-    CONSTRAINT "challangelikes_pkey" PRIMARY KEY ("challenge_id", "user_id")
-) WITH (oids = false);
-
-CREATE TABLE "public"."resourcelikes" (
-    "resource_id" integer NOT NULL,
-    "user_id" integer NOT NULL,
-    CONSTRAINT "resourcelikes_pkey" PRIMARY KEY ("resource_id", "user_id")
-) WITH (oids = false);
-
-CREATE TABLE "public"."commentlikes" (
-    "comment_id" integer NOT NULL,
-    "user_id" integer NOT NULL,
-    CONSTRAINT "commentlikes_pkey" PRIMARY KEY ("comment_id", "user_id")
-) WITH (oids = false);
 
 CREATE TABLE "public"."comments" (
     "id" integer DEFAULT nextval('comments_id_seq') NOT NULL,
@@ -167,7 +144,6 @@ CREATE TABLE "public"."userbadge" (
 CREATE TABLE "public"."userchallenge" (
     "user_id" integer NOT NULL,
     "challenge_id" integer NOT NULL,
-    "solution" character varying(5000) NOT NULL,
     CONSTRAINT "userchallenge_pkey" PRIMARY KEY ("user_id", "challenge_id")
 ) WITH (oids = false);
 
@@ -179,7 +155,6 @@ CREATE TABLE "public"."users" (
     "role" character varying(20) NOT NULL,
     "score" integer DEFAULT '0',
     "reward_points" integer DEFAULT '0',
-    "reward_timer" timestamp with time zone DEFAULT now(), 
     CONSTRAINT "users_email_key" UNIQUE ("email"),
     CONSTRAINT "users_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "users_username_key" UNIQUE ("username")
@@ -193,7 +168,6 @@ CREATE TABLE "public"."notifications" (
     "read" boolean DEFAULT false,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "challenger_username" character varying(50),
-    "challenge_id" integer REFERENCES challenges(id) ON DELETE CASCADE,
     CONSTRAINT "notification_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
@@ -203,19 +177,6 @@ CREATE TABLE "public"."purchases" (
     "purchase_date" timestamp DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "purchases_pkey" PRIMARY KEY ("user_id", "resource_id")
 ) WITH (oids = false);
-
-CREATE TABLE "public"."challengehistory" (
-    "id" SERIAL PRIMARY KEY,
-    "sender_id" INTEGER NOT NULL,
-    "recipient_id" INTEGER NOT NULL,
-    "challenge_id" INTEGER NOT NULL,
-    "status" VARCHAR(20) DEFAULT 'pending',
-    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "challengehistory_sender_id_fkey" FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT "challengehistory_recipient_id_fkey" FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT "challengehistory_challenge_id_fkey" FOREIGN KEY (challenge_id) REFERENCES challenges(id) ON DELETE CASCADE
-);
 
 ALTER TABLE ONLY "public"."friends" ADD CONSTRAINT "friend_user_id1_fkey" FOREIGN KEY (user_id1) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."friends" ADD CONSTRAINT "friend_user_id2_fkey" FOREIGN KEY (user_id2) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
@@ -244,14 +205,6 @@ ALTER TABLE ONLY "public"."comments" ADD CONSTRAINT "comments_user_id_fkey" FORE
 
 ALTER TABLE ONLY "public"."purchases" ADD CONSTRAINT "purchases_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."purchases" ADD CONSTRAINT "purchases_resource_id_fkey" FOREIGN KEY (resource_id) REFERENCES resources(id) ON DELETE CASCADE NOT DEFERRABLE;
-
-ALTER TABLE ONLY "public"."challangelikes" ADD CONSTRAINT "challangelikes_challenge_id_fkey" FOREIGN KEY (challenge_id) REFERENCES challenges(id) ON DELETE CASCADE NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."challangelikes" ADD CONSTRAINT "challangelikes_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
-
-ALTER TABLE ONLY "public"."resourcelikes" ADD CONSTRAINT "resourcelikes_resource_id_fkey" FOREIGN KEY (resource_id) REFERENCES resources(id) ON DELETE CASCADE NOT DEFERRABLE;
-ALTER TABLE ONLY "public"."resourcelikes" ADD CONSTRAINT "resourcelikes_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
-
-
 
 INSERT INTO badges (title, description) VALUES 
 ('Beginner Badge', 'Awarded for starting out'),
@@ -420,10 +373,10 @@ INSERT INTO resources (title, description) VALUES
  - Testing techniques for robust code.' 
 );
 
-INSERT INTO users (username, email, password, role, score, reward_points, reward_timer) VALUES
-('user1', 'user1@example.com', '$2y$10$SRGvDkhxmYo/jtIccmmHK.LAeULCdfhnTgu63i0z/a8cCj3/sBZsG', 'admin', 100, 0, now()),
-('user2', 'user2@example.com', 'hashed_password2', 'user', 50, 0, now()),
-('user3', 'user3@example.com', 'hashed_password3', 'user', 75, 0, now());
+INSERT INTO users (username, email, password, role, score) VALUES
+('user1', 'user1@example.com', '$2y$10$SRGvDkhxmYo/jtIccmmHK.LAeULCdfhnTgu63i0z/a8cCj3/sBZsG', 'admin', 100),
+('user2', 'user2@example.com', 'hashed_password2', 'user', 50),
+('user3', 'user3@example.com', 'hashed_password3', 'user', 75);
 
 -- Insert tags
 INSERT INTO tags (name) VALUES 
@@ -433,12 +386,7 @@ INSERT INTO tags (name) VALUES
 ('Algorithm Complexity'),
 ('Python'),
 ('JavaScript'),
-('Go'),
-('Data Structures'),
-('Parallel Computing'),
-('Dynamic Programming'),
-('Algorithm Complexity')
-ON CONFLICT DO NOTHING;
+('Go');
 
 -- Insert comments
 INSERT INTO comments (user_id, comment) VALUES
@@ -481,70 +429,3 @@ INSERT INTO resourcetag (resource_id, tag_id) VALUES
 ((SELECT id FROM resources WHERE title = 'Mastering Parentheses Problems'), (SELECT id FROM tags WHERE name = 'Parentheses')),
 ((SELECT id FROM resources WHERE title = 'Mastering Parentheses Problems'), (SELECT id FROM tags WHERE name = 'Algorithm Complexity')),
 ((SELECT id FROM resources WHERE title = 'Go Language Fundamentals'), (SELECT id FROM tags WHERE name = 'Go'));
-
-INSERT INTO resources (title, description, reward_points) VALUES
-('Advanced Data Structures', 
- 'Understanding advanced data structures is essential for optimizing performance and solving complex problems efficiently. 
- This resource covers key structures such as:
-
- - Trie: Used for fast prefix searching and autocomplete functionalities.
- - Segment Tree: Enables efficient range queries and updates in logarithmic time.
- - Fenwick Tree (Binary Indexed Tree): Optimizes prefix sum and range queries with an intuitive update mechanism.
- - Graph Data Structures: Includes adjacency lists, adjacency matrices, and graph traversal algorithms (DFS, BFS).
-
- Practical applications of these structures include:
- - Autocomplete and search engine optimizations using Tries.
- - Fast query processing in databases and computational geometry with Segment Trees.
- - Efficient pathfinding and network optimizations using Graph algorithms.
-
- Hands-on exercises are provided to reinforce understanding.', 
- 5),
-
-('Parallel Computing with Python', 
- 'Parallel computing enhances computational efficiency by leveraging multiple processing units. 
- This resource explores:
-
- - Multiprocessing: Running tasks in parallel using Python’s multiprocessing module.
- - Threading: Understanding the Global Interpreter Lock (GIL) and multi-threading techniques.
- - Asynchronous Programming: Implementing async/await patterns for non-blocking execution.
- - GPU Computing: Utilizing CUDA and OpenCL to accelerate computation.
-
- Key takeaways:
- - Learn when to use multi-threading vs. multiprocessing for performance improvements.
- - Understand common pitfalls such as race conditions and deadlocks.
- - Implement parallel algorithms such as matrix multiplication and data aggregation.
-
- Code snippets and real-world case studies ensure practical application of these concepts.', 
- 200),
-
-('Mastering Dynamic Programming', 
- 'Dynamic Programming (DP) is a powerful technique for solving optimization problems by breaking them down into subproblems. 
- This resource covers:
-
- - Memoization and Tabulation: Understanding top-down and bottom-up DP approaches.
- - Common DP Problems: 
-   - Longest Increasing Subsequence (LIS)
-   - Knapsack Problem (0/1 and Fractional)
-   - Shortest Path in Weighted Graphs
- - State Transition and Recursion Optimization: Analyzing recursive relations and transforming them into DP solutions.
-
- Additional focus on:
- - Space optimization techniques to reduce memory overhead.
- - Identifying overlapping subproblems and optimal substructure properties.
-
- Multiple examples and step-by-step explanations help build a strong DP foundation.', 
- 100);
-
-
-
--- Associate tags with resources
-INSERT INTO resourcetag (resource_id, tag_id) VALUES
-((SELECT id FROM resources WHERE title = 'Advanced Data Structures'), (SELECT id FROM tags WHERE name = 'Data Structures')),
-((SELECT id FROM resources WHERE title = 'Advanced Data Structures'), (SELECT id FROM tags WHERE name = 'Algorithm Complexity')),
-
-((SELECT id FROM resources WHERE title = 'Parallel Computing with Python'), (SELECT id FROM tags WHERE name = 'Parallel Computing')),
-((SELECT id FROM resources WHERE title = 'Parallel Computing with Python'), (SELECT id FROM tags WHERE name = 'Python')),
-
-((SELECT id FROM resources WHERE title = 'Mastering Dynamic Programming'), (SELECT id FROM tags WHERE name = 'Dynamic Programming')),
-((SELECT id FROM resources WHERE title = 'Mastering Dynamic Programming'), (SELECT id FROM tags WHERE name = 'Algorithm Complexity'));
-

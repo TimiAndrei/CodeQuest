@@ -109,6 +109,7 @@
 }
 
 .list-container-leaderboard:hover {
+  cursor: pointer;
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
@@ -206,8 +207,4 @@
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
   background-color: #76a520;
-}
-
-.pagination-info {
-  cursor: default;
 }
