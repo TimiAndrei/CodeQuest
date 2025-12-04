@@ -17,10 +17,33 @@ class UserRead(BaseModel):
     role: str
     score: int
     reward_points: int
+    reward_timer: datetime
 
     class Config:
         from_attributes = True
 
+class UserChallengeRead(BaseModel):
+    user_id: int
+    challenge_id: int
+    solution: str
+    
+    class Config:
+        from_attributes = True
+
+class UserChallengeCreate(BaseModel):
+    user_id: int
+    challenge_id: int
+    solution: str
+
+    class Config:
+        from_attributes = True
+
+class UserChallengeDelete(BaseModel):
+    user_id: int
+    challenge_id: int
+
+    class Config:
+        from_attributes = True
 
 class UserSearch(BaseModel):
     query: str
@@ -41,6 +64,7 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     score: Optional[int] = None
     reward_points: Optional[int] = None
+    reward_timer: Optional[datetime] = None
 
 
 class UserLogin(BaseModel):
@@ -101,12 +125,14 @@ class ChallengeUpdate(BaseModel):
 class ResourceCreate(BaseModel):
     title: str
     description: str
+    reward_points: int
 
 
 class ResourceRead(BaseModel):
     id: int
     title: str
     description: str
+    reward_points: int
 
     class Config:
         from_attributes = True
@@ -115,6 +141,7 @@ class ResourceRead(BaseModel):
 class ResourceUpdate(BaseModel):
     title: str = None
     description: str = None
+    reward_points: int = None
 
 
 class CodeSubmission(BaseModel):
@@ -269,3 +296,59 @@ class ChallengeCommentUpdate(BaseModel):
 class ResourceCommentUpdate(BaseModel):
     resource_id: int = None
     comment_id: int = None
+
+
+class PurchaseCreate(BaseModel):
+    user_id: int
+    resource_id: int
+
+
+class PurchaseRead(BaseModel):
+    user_id: int
+    resource_id: int
+    purchase_date: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ResourceLikeCreate(BaseModel):
+    user_id: int
+    resource_id: int
+
+
+class ResourceLikeRead(BaseModel):
+    user_id: int
+    resource_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ResourceLikeDelete(BaseModel):
+    user_id: int
+    resource_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ChallengeLikeCreate(BaseModel):
+    user_id: int
+    challenge_id: int
+
+
+class ChallengeLikeRead(BaseModel):
+    user_id: int
+    challenge_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ChallengeLikeDelete(BaseModel):
+    user_id: int
+    challenge_id: int
+
+    class Config:
+        from_attributes = True
