@@ -16,6 +16,7 @@ class UserRead(BaseModel):
     email: str
     role: str
     score: int
+    reward_points: int
 
     class Config:
         from_attributes = True
@@ -39,6 +40,7 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     role: Optional[str] = None
     score: Optional[int] = None
+    reward_points: Optional[int] = None
 
 
 class UserLogin(BaseModel):
@@ -211,3 +213,59 @@ class NotificationRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CommentCreate(BaseModel):
+    user_id: int
+    comment: str
+
+
+class CommentRead(BaseModel):
+    id: int
+    user_id: int
+    comment: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ChallengeCommentCreate(BaseModel):
+    challenge_id: int
+    comment_id: int
+
+
+class ChallengeCommentRead(BaseModel):
+    challenge_id: int
+    comment_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ResourceCommentCreate(BaseModel):
+    resource_id: int
+    comment_id: int
+
+
+class ResourceCommentRead(BaseModel):
+    resource_id: int
+    comment_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CommentUpdate(BaseModel):
+    user_id: int = None
+    comment: str = None
+
+
+class ChallengeCommentUpdate(BaseModel):
+    challenge_id: int = None
+    comment_id: int = None
+
+
+class ResourceCommentUpdate(BaseModel):
+    resource_id: int = None
+    comment_id: int = None

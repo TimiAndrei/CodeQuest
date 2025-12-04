@@ -1,26 +1,76 @@
 .soloresource-details-container {
-  margin-top: 5%;
   width: 100%;
+  min-height: 90vh;
+  background: linear-gradient(
+    -45deg,
+    #1a1a1a,
+    #333333,
+    #0d1b2a,
+    #1b263b
+  ); /* Darker gradient */
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .soloresource-card {
-  width: 60%;
+  width: 70%;
+  min-width: 600px; /* Ensure consistent width */
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
   padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  min-height: 500px;
+  color: #fff;
+  animation: fadeInScale 0.5s ease-in-out;
+  transition: box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.soloresource-card:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .soloresource-card h2 {
   font-size: 2rem;
-  color: #333;
+  color: #fff;
 }
 
 .soloresource-card p {
   font-size: 1.2rem;
-  color: #555;
+  color: #fff;
+  white-space: pre-wrap;
 }
