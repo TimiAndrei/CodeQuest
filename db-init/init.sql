@@ -63,6 +63,7 @@ DROP TABLE IF EXISTS "challangelikes" CASCADE;
 DROP TABLE IF EXISTS "resourcelikes" CASCADE;
 DROP TABLE IF EXISTS "resourcetag" CASCADE;
 DROP TABLE IF EXISTS "commentlikes" CASCADE;
+DROP TABLE IF EXISTS "challengehistory" CASCADE;
 
 CREATE TABLE "public"."challangelikes" (
     "challenge_id" integer NOT NULL,
@@ -192,6 +193,7 @@ CREATE TABLE "public"."notifications" (
     "read" boolean DEFAULT false,
     "created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
     "challenger_username" character varying(50),
+    "challenge_id" integer REFERENCES challenges(id) ON DELETE CASCADE,
     CONSTRAINT "notification_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
@@ -201,6 +203,19 @@ CREATE TABLE "public"."purchases" (
     "purchase_date" timestamp DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "purchases_pkey" PRIMARY KEY ("user_id", "resource_id")
 ) WITH (oids = false);
+
+CREATE TABLE "public"."challengehistory" (
+    "id" SERIAL PRIMARY KEY,
+    "sender_id" INTEGER NOT NULL,
+    "recipient_id" INTEGER NOT NULL,
+    "challenge_id" INTEGER NOT NULL,
+    "status" VARCHAR(20) DEFAULT 'pending',
+    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "challengehistory_sender_id_fkey" FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT "challengehistory_recipient_id_fkey" FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT "challengehistory_challenge_id_fkey" FOREIGN KEY (challenge_id) REFERENCES challenges(id) ON DELETE CASCADE
+);
 
 ALTER TABLE ONLY "public"."friends" ADD CONSTRAINT "friend_user_id1_fkey" FOREIGN KEY (user_id1) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."friends" ADD CONSTRAINT "friend_user_id2_fkey" FOREIGN KEY (user_id2) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
@@ -235,6 +250,8 @@ ALTER TABLE ONLY "public"."challangelikes" ADD CONSTRAINT "challangelikes_user_i
 
 ALTER TABLE ONLY "public"."resourcelikes" ADD CONSTRAINT "resourcelikes_resource_id_fkey" FOREIGN KEY (resource_id) REFERENCES resources(id) ON DELETE CASCADE NOT DEFERRABLE;
 ALTER TABLE ONLY "public"."resourcelikes" ADD CONSTRAINT "resourcelikes_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE NOT DEFERRABLE;
+
+
 
 INSERT INTO badges (title, description) VALUES 
 ('Beginner Badge', 'Awarded for starting out'),

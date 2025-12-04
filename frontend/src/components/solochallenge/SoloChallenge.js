@@ -33,13 +33,11 @@ function SoloChallenge() {
 
   const fetchChallengeLikes = useCallback(async () => {
     try {
-      const response = await axios.get(
+      const { data } = await axios.get(
         `http://localhost:8000/challenges/like/${id}`
       );
-      setChallengeLikes(response.data.length);
-      setUserChallengeLike(
-        response.data.some((like) => like.user_id === user.id)
-      );
+      setChallengeLikes(data.length);
+      setUserChallengeLike(data.some((like) => like.user_id === user.id));
     } catch (error) {
       console.error("Error fetching challenge likes:", error);
     }
@@ -47,13 +45,10 @@ function SoloChallenge() {
 
   const handleLikeChallenge = async () => {
     try {
-      const response = await axios.post(
-        `http://localhost:8000/challenges/like`,
-        {
-          user_id: user.id,
-          challenge_id: id,
-        }
-      );
+      await axios.post(`http://localhost:8000/challenges/like`, {
+        user_id: user.id,
+        challenge_id: id,
+      });
       setChallengeLikes((prevLikes) =>
         userChallengeLike ? prevLikes - 1 : prevLikes + 1
       );
@@ -146,7 +141,8 @@ function SoloChallenge() {
         languageId,
         stdin,
         expectedOutput,
-        user.id // Pass the user ID
+        user.id,
+        time
       );
       console.log("API Response:", result);
 
@@ -366,11 +362,10 @@ function SoloChallenge() {
 
   const handleLikeComment = async (commentId) => {
     try {
-      const response = await axios.post(`http://localhost:8000/comments/like`, {
+      await axios.post(`http://localhost:8000/comments/like`, {
         user_id: user.id,
         comment_id: commentId,
       });
-      const liked = response.data;
       setLikes((prevLikes) => ({
         ...prevLikes,
         [commentId]: userLikes[commentId]

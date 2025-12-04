@@ -206,4 +206,20 @@ class CommentLike(Base):
     comment_id = Column(Integer, ForeignKey("comments.id"), primary_key=True)
 
 
+class ChallengeHistory(Base):
+    __tablename__ = "challengehistory"
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    recipient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    challenge_id = Column(Integer, ForeignKey("challenges.id"), nullable=False)
+    status = Column(String, default="pending")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
+
+    sender = relationship("User", foreign_keys=[sender_id])
+    recipient = relationship("User", foreign_keys=[recipient_id])
+    challenge = relationship("Challenge")
+
+
 Base.metadata.create_all(bind=engine)

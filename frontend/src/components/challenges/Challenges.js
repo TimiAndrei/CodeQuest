@@ -19,8 +19,6 @@ import "./challenges.css";
 
 function Challenges() {
   const [allChallenges, setAllChallenges] = useState([]);
-  const [solvedChallenges, setSolvedChallenges] = useState([]);
-
   const [page, setPage] = useState(0);
   const challengesPerPage = 5;
 
@@ -56,24 +54,10 @@ function Challenges() {
   const [likes, setLikes] = useState({});
   const [tags, setTags] = useState([]);
   const [challengeTags, setChallengeTags] = useState({});
+  const [visibleChallenges] = useState([]);
 
   useEffect(() => {
-    const fetchSolvedChallenges = async () => {
-      if (!user) return;
-      try {
-        const response = await axios.get(
-          `http://localhost:8000/users/${user.id}/solved-challenges`
-        );
-        setSolvedChallenges(response.data.map((challenge) => challenge.id));
-      } catch (error) {
-        console.error("Error fetching solved challenges:", error);
-      }
-    };
-    fetchSolvedChallenges();
-  }, [user]);
-
-  useEffect(() => {
-    const fetchSentChallenges = async () => {
+    const fetchChallenges = async () => {
       if (filter.solvedStatus === "sent" && user) {
         try {
           const response = await axios.get(
@@ -83,10 +67,19 @@ function Challenges() {
         } catch (error) {
           console.error("Error fetching sent challenges:", error);
         }
+      } else if (filter.solvedStatus === "received" && user) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8000/users/${user.id}/received-challenges`
+          );
+          setAllChallenges(response.data);
+        } catch (error) {
+          console.error("Error fetching received challenges:", error);
+        }
       } else {
         const fetchAll = async () => {
           try {
-            const data = await getAllChallenges();
+            const data = await getAllChallenges(user.id);
             setAllChallenges(data);
           } catch (error) {
             console.error("Error fetching challenges:", error);
@@ -95,7 +88,7 @@ function Challenges() {
         fetchAll();
       }
     };
-    fetchSentChallenges();
+    fetchChallenges();
   }, [filter.solvedStatus, user]);
 
   const fetchTags = useCallback(async () => {
@@ -182,18 +175,6 @@ function Challenges() {
   }, [fetchLikes]);
 
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const data = await getAllChallenges();
-        setAllChallenges(data);
-      } catch (error) {
-        console.error("Error fetching challenges:", error);
-      }
-    };
-    fetchAll();
-  }, []);
-
-  useEffect(() => {
     const fetchFriends = async () => {
       if (!user) return;
       try {
@@ -242,9 +223,11 @@ function Challenges() {
     }
 
     if (filter.solvedStatus === "solved") {
-      filtered = filtered.filter((ch) => solvedChallenges.includes(ch.id));
+      filtered = filtered.filter((ch) => ch.status === "completed");
     } else if (filter.solvedStatus === "unsolved") {
-      filtered = filtered.filter((ch) => !solvedChallenges.includes(ch.id));
+      filtered = filtered.filter(
+        (ch) => ch.status === "pending" || ch.status === "unsolved"
+      );
     }
 
     if (filter.sortBy === "latest") {
@@ -256,14 +239,7 @@ function Challenges() {
     }
 
     return filtered;
-  }, [
-    allChallenges,
-    searchTerm,
-    filter,
-    likes,
-    challengeTags,
-    solvedChallenges,
-  ]);
+  }, [allChallenges, searchTerm, filter, likes, challengeTags]);
 
   const startIndex = page * challengesPerPage;
   const endIndex = startIndex + challengesPerPage;
@@ -287,7 +263,7 @@ function Challenges() {
       output: newChallenge.output,
       difficulty: newChallenge.difficulty,
       language: newChallenge.language,
-      tags: newChallenge.tags, // Include tags in the challenge submission
+      tags: newChallenge.tags,
     };
 
     try {
@@ -304,8 +280,8 @@ function Challenges() {
         tags: [], // Reset tags
       });
       setPage(0);
+      const updated = await getAllChallenges(user.id);
 
-      const updated = await getAllChallenges();
       setAllChallenges(updated);
     } catch (error) {
       console.error("Error adding challenge:", error);
@@ -359,33 +335,25 @@ function Challenges() {
             throw new Error(`User ${friendUsername} not found`);
           }
 
-          // Fetch notifications for the recipient
-          const existingNotifications = await axios.get(
-            `http://localhost:8000/users/${recipient.id}/notifications`
-          );
-
-          // Check if a notification for this challenge already exists
-          const alreadySent = existingNotifications.data.some(
-            (notification) =>
-              notification.link === `/soloChallenge/${currentChallengeId}` &&
-              notification.recipient_id === recipient.id
-          );
-
-          if (alreadySent) {
-            toast.info(`Challenge already sent to ${friendUsername}.`);
-            return;
-          }
-
           // Send the challenge notification
-          await axios.post(`http://localhost:8000/notifications`, {
-            recipient_id: recipient.id,
-            message: `You have been challenged to "${challenge.title}" challenge by "${user.username}"!`,
-            link: `/soloChallenge/${currentChallengeId}`,
-            challenger_username: user.username,
-            challenge_id: currentChallengeId,
-          });
-
-          toast.success(`Challenge sent to ${friendUsername}!`);
+          try {
+            await axios.post(`http://localhost:8000/notifications`, {
+              recipient_id: recipient.id,
+              message: `You have been challenged to "${challenge.title}" challenge by "${user.username}"!`,
+              link: `/soloChallenge/${currentChallengeId}`,
+              challenger_username: user.username,
+              challenge_id: currentChallengeId,
+            });
+            toast.success(`Challenge sent to ${friendUsername}!`);
+          } catch (error) {
+            if (error.response && error.response.status === 400) {
+              // Handle specific backend error messages
+              toast.error(error.response.data.detail);
+            } else {
+              console.error("Error sending challenge:", error);
+              toast.error("Failed to send challenge.");
+            }
+          }
         })
       );
 
@@ -435,6 +403,7 @@ function Challenges() {
                   <option value="solved">Solved Challenges</option>
                   <option value="unsolved">Unsolved Challenges</option>
                   <option value="sent">Sent Challenges</option>
+                  <option value="received">Received Challenges</option>
                 </select>
                 <select
                   name="sortBy"
@@ -495,23 +464,25 @@ function Challenges() {
               <ul className="list-challenges">
                 {currentPageChallenges.map((challenge, index) => (
                   <li
-                    key={`${challenge.id}-${
-                      challenge.isSent
-                        ? "sent"
-                        : challenge.isReceived
-                        ? "received"
-                        : "normal"
-                    }-${index}`}
+                    key={`${challenge.id}-${challenge.status}-${index}`}
                     className={`list-item-challenges ${
-                      solvedChallenges.includes(challenge.id) ? "solved" : ""
-                    }`}
+                      challenge.status === "completed" ? "solved" : ""
+                    } ${visibleChallenges.includes(index) ? "visible" : ""}`}
+                    style={{
+                      animationDelay: `${index * 0.2}s`,
+                    }}
                   >
                     <span>{challenge.title}</span>
                     <span>{challenge.language}</span>
                     <span>{challenge.difficulty}</span>
-                    {challenge.friend_username && (
-                      <span>Sent to: {challenge.friend_username}</span>
-                    )}
+                    {filter.solvedStatus === "sent" &&
+                      challenge.friend_username && (
+                        <span>Sent to: {challenge.friend_username}</span>
+                      )}
+                    {filter.solvedStatus === "received" &&
+                      challenge.friend_username && (
+                        <span>From: {challenge.friend_username}</span>
+                      )}
                     <div className="button-container-challenges">
                       <button
                         className="button-challenges solo-button"
@@ -527,7 +498,6 @@ function Challenges() {
                           className="button-challenges friend-button"
                           onClick={async () => {
                             try {
-                              // Send a reminder notification
                               await axios.post(
                                 `http://localhost:8000/notifications`,
                                 {
@@ -540,6 +510,7 @@ function Challenges() {
                                   link: `/soloChallenge/${challenge.id}`,
                                   challenger_username: user.username,
                                   challenge_id: challenge.id,
+                                  reminder: true,
                                 }
                               );
                               toast.success(
@@ -547,7 +518,10 @@ function Challenges() {
                               );
                             } catch (error) {
                               console.error("Error sending reminder:", error);
-                              toast.error("Failed to send reminder.");
+                              toast.error(
+                                error.response?.data?.detail ||
+                                  "Failed to send reminder."
+                              );
                             }
                           }}
                         >
