@@ -382,3 +382,38 @@
 .filter-dropdown option:hover {
   background: rgba(45, 45, 45, 0.7);
 }
+
+.solved {
+  background-color: rgba(40, 167, 69, 0.2);
+  border-left: 5px solid rgba(40, 167, 69, 0.8);
+}
+
+.list-item-challenges.solved:hover {
+  background-color: rgba(40, 167, 69, 0.2);
+  border-left: 5px solid rgba(40, 167, 69, 0.8);
+}
+
+@keyframes bounceZoomIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.list-item-challenges {
+  animation: bounceZoomIn 0.5s ease-in-out;
+  animation-fill-mode: both;
+  opacity: 0;
+}
+
+.list-item-challenges.visible {
+  opacity: 1;
+}

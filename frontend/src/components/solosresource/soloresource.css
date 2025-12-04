@@ -11,8 +11,9 @@
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  gap: 20px;
 }
 
 @keyframes gradientBG {
@@ -45,9 +46,11 @@
   color: #fff;
   animation: fadeInScale 0.5s ease-in-out;
   transition: box-shadow 0.3s ease, border 0.3s ease;
+  margin-top: 50px;
 }
 
-.soloresource-card:hover {
+.soloresource-card:hover,
+.comments-section:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
@@ -73,4 +76,129 @@
   font-size: 1.2rem;
   color: #fff;
   white-space: pre-wrap;
+}
+
+.comments-section {
+  width: 70%;
+  min-width: 600px;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: #fff;
+  animation: fadeInScale 0.5s ease-in-out;
+}
+
+.comment-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeInScale 0.5s ease-in-out;
+}
+
+.comment-card:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+.comment-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 40px;
+}
+
+.edit-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-comment textarea,
+.edit-comment textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: rgba(45, 45, 45, 0.5);
+  color: #fff;
+}
+
+button {
+  align-self: flex-end;
+  padding: 7px 15px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.delete-button {
+  background-color: #dc3545;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+}
+
+.edit-comment-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.resource-comments-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.edit-button,
+.like-button,
+.add-button,
+.timer-button.start {
+  background-color: #007bff;
+}
+
+.edit-button:hover,
+.like-button:hover,
+.add-button:hover {
+  background-color: #0056b3;
+}
+
+.delete-button,
+.cancel-button {
+  background-color: #dc3545;
+}
+
+.delete-button:hover,
+.cancel-button:hover {
+  background-color: #c82333;
+}
+
+.timer-button.pause {
+  background-color: #86bc25;
+}
+
+.timer-button.pause:hover {
+  background-color: #76a520;
 }

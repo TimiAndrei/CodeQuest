@@ -13,6 +13,7 @@ function Inbox() {
   const [notifications, setNotifications] = useState([]);
   const [showRewardModal, setShowRewardModal] = useState(false);
   const [rewardTimer, setRewardTimer] = useState(null);
+  const [remainingTime, setRemainingTime] = useState(0);
 
   const rewards = [
     "5 points",
@@ -52,15 +53,22 @@ function Inbox() {
   }, [user.id]);
 
   const fetchRewardTimer = useCallback(async () => {
+    if (user.role === "admin") {
+      setRewardTimer(0);
+      setRemainingTime(0);
+      return;
+    }
     try {
       const response = await axios.get(
         `http://localhost:8000/users/${user.id}/reward-timer`
       );
-      setRewardTimer(response.data.timer);
+      const timerInSeconds = Math.floor(response.data.timer * 3600);
+      setRewardTimer(timerInSeconds);
+      setRemainingTime(timerInSeconds);
     } catch (error) {
       console.error("Error fetching reward timer:", error);
     }
-  }, [user.id]);
+  }, [user.id, user.role]);
 
   useEffect(() => {
     if (user) {
@@ -68,6 +76,16 @@ function Inbox() {
       fetchRewardTimer();
     }
   }, [user, fetchNotifications, fetchRewardTimer]);
+
+  useEffect(() => {
+    if (user.role !== "admin") {
+      const interval = setInterval(() => {
+        setRemainingTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [user.role]);
 
   const handleDeleteNotification = async (notificationId) => {
     try {
@@ -99,12 +117,22 @@ function Inbox() {
       await axios.post(`http://localhost:8000/users/${user.id}/reward`, {
         points: reward,
       });
-      fetchRewardTimer();
+      if (user.role !== "admin") {
+        fetchRewardTimer();
+      }
     } catch (error) {
       console.error("Error updating reward points:", error);
       toast.error("Failed to update reward points.");
     }
   };
+
+  const formatTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+  };
+
   const sortedNotifications = [...notifications].sort((a, b) => a.id - b.id);
 
   return (
@@ -121,24 +149,20 @@ function Inbox() {
                 <ul className="notifications-list">
                   <li className="notification-item">
                     <span className="notification-message">
-                      {rewardTimer !== null && rewardTimer > 0
-                        ? rewardTimer >= 1
-                          ? `Next reward available in ${rewardTimer.toFixed(
-                              2
-                            )} hours`
-                          : `Next reward available in ${(
-                              rewardTimer * 60
-                            ).toFixed(0)} minutes`
+                      {remainingTime > 0 && user.role !== "admin"
+                        ? `Next reward available in ${formatTime(
+                            remainingTime
+                          )}`
                         : "Daily Reward Available! Click to spin the wheel."}
                     </span>
-                    {rewardTimer !== null && rewardTimer <= 0 && (
+                    {remainingTime <= 0 || user.role === "admin" ? (
                       <button
                         className="button-inbox reward-button"
                         onClick={handleDailyRewardClick}
                       >
                         Claim Reward
                       </button>
-                    )}
+                    ) : null}
                   </li>
                   {sortedNotifications.map((notification) => (
                     <li key={notification.id} className="notification-item">

@@ -64,7 +64,7 @@ const WheelComponent = ({
     isStarted.current = true;
     if (timerHandle.current === 0) {
       spinStart.current = new Date().getTime();
-      maxSpeed.current = Math.PI / segments.length;
+      maxSpeed.current = Math.PI / segments.length + Math.random() * 0.1; // Add randomness to the initial speed
       frames.current = 0;
       timerHandle.current = setInterval(onTimerTick, timerDelay);
     }

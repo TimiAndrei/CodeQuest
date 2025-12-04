@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 .navbar {
   background-color: black;
   height: 10vh;
@@ -8,8 +12,7 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  /* margin-bottom: 5px; */
-  /* border-bottom: 3px solid; */
+  width: 100%;
 }
 
 .nav-container {
@@ -17,9 +20,9 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  height: 80px;
+  height: 100%;
   max-width: 1500px;
-  position: relative;
+  padding: 0 20px;
 }
 
 .nav-logo {
@@ -28,11 +31,8 @@
   cursor: pointer;
   text-decoration: none;
   font-size: 2.5rem;
-  width: auto;
   display: flex;
-  justify-items: center;
-  margin-bottom: 5px;
-  margin-top: 5px;
+  align-items: center;
 }
 
 .nav-logo .icon {
@@ -55,26 +55,15 @@
   padding: 0.5rem 1rem;
   height: 100%;
   border-bottom: 3px solid transparent;
+  display: flex;
+  align-items: center;
 }
 
 .nav-item {
-  line-height: 20px;
-  margin-top: 13px;
   margin-right: 1rem;
-  font-size: 2.5rem;
-}
-
-.nav-item:after {
-  content: "";
-  display: block;
-  height: 3px;
-  width: 0;
-  background: transparent;
-}
-
-.nav-item .active {
-  color: white;
-  border: 1px solid white;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
 }
 
 .nav-icon {
@@ -106,23 +95,20 @@
     width: 100%;
     border-top: 1px solid #fff;
     position: absolute;
-    top: 60px;
+    top: 100%;
     left: -110%;
     opacity: 1;
     transition: all 0.5s ease;
+    background: black;
   }
 
   .nav-menu.active {
-    background: black;
-    left: -30px;
+    left: 0;
     opacity: 1;
     transition: all 0.5s ease;
     z-index: 1;
   }
-  .nav-item .active {
-    color: white;
-    border: none;
-  }
+
   .nav-links {
     padding: 1.5rem;
     width: 100%;
@@ -137,7 +123,7 @@
   .nav-icon {
     display: block;
     position: absolute;
-    top: 60%;
+    top: 50%;
     right: 0;
     transform: translate(-100%, -50%);
     width: 3rem;
@@ -156,33 +142,12 @@
   color: rgba(0, 0, 0, 0.3);
 }
 
-.nav-links {
-  color: white;
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  font-size: 1.2rem;
-  border-bottom: 3px solid transparent;
-}
-
 .nav-links:hover {
   border-bottom: 3px solid #007cb0;
 }
 
 .nav-links.active {
   border-bottom: 3px solid #ffffff;
-}
-
-.nav-item {
-  margin-right: 1rem;
-  display: flex;
-  align-items: center;
-}
-
-.nav-icon .icon {
-  font-size: 1.5rem;
 }
 
 .logout-link {
@@ -208,17 +173,16 @@
 }
 
 .nav-logo-image {
-  height: 80px;
+  height: auto;
+  max-height: 80px;
   width: auto;
   object-fit: contain;
 }
 
-/* Add these styles to your existing navbar.css file */
-
 .notification-count {
   background-color: red;
   color: white;
-  border-radius: 80%;
+  border-radius: 50%;
   padding: 2px 6px;
   font-size: 0.8rem;
   margin-left: 5px;

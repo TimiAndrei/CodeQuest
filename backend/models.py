@@ -14,6 +14,9 @@ from sqlalchemy.orm import relationship, sessionmaker
 
 import os
 
+# SWAP DATABASE_URL IF RUNNING IN DOCKER
+# DATABASE_URL = "postgresql://postgres:admin@localhost:5433/test_db"
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)
@@ -69,11 +72,10 @@ class Tag(Base):
     __tablename__ = "tags"
     id = Column(Integer, Sequence("tag_id_seq"), primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
-    challenges = relationship(
-        "Challenge", secondary="challengetag", back_populates="tags"
-    )
-    resources = relationship(
-        "Resource", secondary="resourcetag", back_populates="tags")
+    challenges = relationship("Challenge", secondary="challengetag",
+                              back_populates="tags")
+    resources = relationship("Resource", secondary="resourcetag",
+                             back_populates="tags")
 
 
 class ChallengeTag(Base):
@@ -130,6 +132,7 @@ class Notification(Base):
     read = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     challenger_username = Column(String(50))
+    challenge_id = Column(Integer, ForeignKey("challenges.id"))
 
     recipient = relationship("User", back_populates="notifications")
 
@@ -147,19 +150,34 @@ class Comment(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
-class ChallengeComment(Base):
-    __tablename__ = "challangecomment"
+# class ChallengeComment(Base):
+#     __tablename__ = "challangecomment"
 
-    challenge_id = Column(Integer, ForeignKey(
-        "challenges.id"), primary_key=True)
-    comment_id = Column(Integer, ForeignKey("comments.id"), primary_key=True)
+#     challenge_id = Column(Integer, ForeignKey(
+#         "challenges.id"), primary_key=True)
+#     comment_id = Column(Integer, ForeignKey("comments.id"), primary_key=True)
 
+
+# class ResourceComment(Base):
+#     __tablename__ = "resourcecomment"
+
+#     resource_id = Column(Integer, ForeignKey("resources.id"), primary_key=True)
+#     comment_id = Column(Integer, ForeignKey("comments.id"), primary_key=True)
 
 class ResourceComment(Base):
     __tablename__ = "resourcecomment"
+    resource_id = Column(Integer, ForeignKey(
+        "resources.id", ondelete="CASCADE"), primary_key=True)
+    comment_id = Column(Integer, ForeignKey(
+        "comments.id", ondelete="CASCADE"), primary_key=True)
 
-    resource_id = Column(Integer, ForeignKey("resources.id"), primary_key=True)
-    comment_id = Column(Integer, ForeignKey("comments.id"), primary_key=True)
+
+class ChallengeComment(Base):
+    __tablename__ = "challengecomment"
+    challenge_id = Column(Integer, ForeignKey(
+        "challenges.id", ondelete="CASCADE"), primary_key=True)
+    comment_id = Column(Integer, ForeignKey(
+        "comments.id", ondelete="CASCADE"), primary_key=True)
 
 
 class Purchase(Base):
@@ -168,14 +186,40 @@ class Purchase(Base):
     resource_id = Column(Integer, ForeignKey("resources.id"), primary_key=True)
     purchase_date = Column(DateTime, default=datetime.utcnow)
 
+
 class ResourceLike(Base):
     __tablename__ = "resourcelikes"
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     resource_id = Column(Integer, ForeignKey("resources.id"), primary_key=True)
 
+
 class ChallengeLike(Base):
     __tablename__ = "challengelikes"
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    challenge_id = Column(Integer, ForeignKey("challenges.id"), primary_key=True)
+    challenge_id = Column(Integer, ForeignKey(
+        "challenges.id"), primary_key=True)
+
+
+class CommentLike(Base):
+    __tablename__ = "commentlikes"
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    comment_id = Column(Integer, ForeignKey("comments.id"), primary_key=True)
+
+
+class ChallengeHistory(Base):
+    __tablename__ = "challengehistory"
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    recipient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    challenge_id = Column(Integer, ForeignKey("challenges.id"), nullable=False)
+    status = Column(String, default="pending")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow,
+                        onupdate=datetime.utcnow)
+
+    sender = relationship("User", foreign_keys=[sender_id])
+    recipient = relationship("User", foreign_keys=[recipient_id])
+    challenge = relationship("Challenge")
+
 
 Base.metadata.create_all(bind=engine)

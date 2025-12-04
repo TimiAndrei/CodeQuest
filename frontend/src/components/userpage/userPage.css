@@ -32,12 +32,9 @@
 }
 
 .user-page-grid {
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-  width: 100%;
-  max-height: 500px;
+  display: flex;
+  justify-content: space-between;
+  width: 60%;
   margin-bottom: 20px;
 }
 
@@ -48,7 +45,6 @@
   background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
   border-radius: 16px;
   padding: 20px;
-  width: 100%;
   text-align: center;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(4px); /* Reduced blur for less prominence */
@@ -58,10 +54,21 @@
   animation: fadeInScale 0.5s ease-in-out;
   transition: box-shadow 0.3s ease, border 0.3s ease;
   overflow: auto;
-  max-height: 500px;
 }
+
+.search-section {
+  width: 60%;
+  height: 250px;
+  margin-bottom: 20px;
+}
+
+.user-profile-card,
+.friends-section {
+  width: 49%;
+}
+
 .admin-section {
-  width: 40%;
+  width: 60%;
 }
 
 .user-profile-card:hover,
@@ -162,10 +169,6 @@
   background-color: #dc3545;
 }
 
-.search-section button {
-  background-color: #007bff;
-}
-
 .search-results ul {
   list-style: none;
   padding: 0;
@@ -195,7 +198,6 @@
   background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
 }
 .search-results button,
-.button-edit,
 .button-save {
   padding: 5px 10px;
   /* font-size: 0.9rem; */
@@ -247,13 +249,11 @@
 }
 
 .promote-button,
-.button-edit,
 .button-save {
   background-color: #28a745;
 }
 
 .promote-button:hover,
-.button-edit:hover,
 .button-save:hover {
   background-color: #218838;
 }
@@ -268,6 +268,44 @@
   background-color: #c82333;
 }
 
+.button-edit {
+  background-color: #007bff;
+}
+
+.button-edit:hover {
+  background-color: #0056b3;
+}
+
+.admin-section::-webkit-scrollbar,
+.search-section::-webkit-scrollbar,
+.friends-section::-webkit-scrollbar {
+  width: 12px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+.admin-section::-webkit-scrollbar-track,
+.search-section::-webkit-scrollbar-track,
+.friends-section::-webkit-scrollbar-track {
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.admin-section::-webkit-scrollbar-thumb,
+.search-section::-webkit-scrollbar-thumb,
+.friends-section::-webkit-scrollbar-thumb {
+  background-color: #0056b3; /* Dark blue color */
+  border-radius: 16px;
+  border: 3px solid rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+}
+
+.admin-section::-webkit-scrollbar-thumb:hover,
+.search-section::-webkit-scrollbar-thumb:hover,
+.friends-section::-webkit-scrollbar-thumb:hover {
+  background-color: #004494; /* Darker blue on hover */
+}
+
 @media (max-width: 1400px) {
   .user-profile-card,
   .friends-section,
@@ -279,8 +317,22 @@
 
 @media (max-width: 1000px) {
   .user-page-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 10px;
+    flex-direction: column;
+    width: 90%;
   }
+
+  .admin-section {
+    width: 90%;
+  }
+}
+
+.demote-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.demote-button:disabled:hover {
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }

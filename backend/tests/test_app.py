@@ -271,3 +271,220 @@ def test_delete_badge(client, test_db):
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == badge_id
+
+
+def test_create_challenge(client, test_db):
+    unique_title = f"Test Challenge {generate_unique_string()}"
+    response = client.post("/challenges/", json={
+        "title": unique_title,
+        "description": "This is a test challenge",
+        "input": "Test input",
+        "output": "Test output",
+        "difficulty": "Easy",
+        "language": "Python",
+        "tags": []
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == unique_title
+    assert data["description"] == "This is a test challenge"
+    assert "id" in data
+
+
+def test_read_challenges(client, test_db):
+    unique_title = f"Test Challenge {generate_unique_string()}"
+    client.post("/challenges/", json={
+        "title": unique_title,
+        "description": "This is a test challenge",
+        "input": "Test input",
+        "output": "Test output",
+        "difficulty": "Easy",
+        "language": "Python",
+        "tags": []
+    })
+    response = client.get("/challenges/")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+
+def test_read_challenge(client, test_db):
+    unique_title = f"Test Challenge {generate_unique_string()}"
+    response = client.post("/challenges/", json={
+        "title": unique_title,
+        "description": "This is a test challenge",
+        "input": "Test input",
+        "output": "Test output",
+        "difficulty": "Easy",
+        "language": "Python",
+        "tags": []
+    })
+    challenge_id = response.json()["id"]
+    response = client.get(f"/challenges/{challenge_id}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == unique_title
+    assert data["description"] == "This is a test challenge"
+
+
+def test_update_challenge(client, test_db):
+    unique_title = f"Test Challenge {generate_unique_string()}"
+    response = client.post("/challenges/", json={
+        "title": unique_title,
+        "description": "This is a test challenge",
+        "input": "Test input",
+        "output": "Test output",
+        "difficulty": "Easy",
+        "language": "Python",
+        "tags": []
+    })
+    challenge_id = response.json()["id"]
+    updated_title = f"Updated Challenge {generate_unique_string()}"
+    response = client.put(f"/challenges/{challenge_id}", json={
+        "title": updated_title,
+        "description": "This is an updated challenge",
+        "input": "Updated input",
+        "output": "Updated output",
+        "difficulty": "Medium",
+        "language": "Python",
+        "tags": []
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == updated_title
+    assert data["description"] == "This is an updated challenge"
+
+
+def test_delete_challenge(client, test_db):
+    unique_title = f"Test Challenge {generate_unique_string()}"
+    response = client.post("/challenges/", json={
+        "title": unique_title,
+        "description": "This is a test challenge",
+        "input": "Test input",
+        "output": "Test output",
+        "difficulty": "Easy",
+        "language": "Python",
+        "tags": []
+    })
+    challenge_id = response.json()["id"]
+    response = client.delete(f"/challenges/{challenge_id}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == challenge_id
+
+
+def test_create_resource(client, test_db):
+    unique_title = f"Test Resource {generate_unique_string()}"
+    response = client.post("/resources/", json={
+        "title": unique_title,
+        "description": "This is a test resource",
+        "reward_points": 10,
+        "tags": []
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == unique_title
+    assert data["description"] == "This is a test resource"
+    assert "id" in data
+
+
+def test_read_resources(client, test_db):
+    unique_title = f"Test Resource {generate_unique_string()}"
+    client.post("/resources/", json={
+        "title": unique_title,
+        "description": "This is a test resource",
+        "reward_points": 10,
+        "tags": []
+    })
+    response = client.get("/resources/")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+
+def test_read_resource(client, test_db):
+    unique_title = f"Test Resource {generate_unique_string()}"
+    response = client.post("/resources/", json={
+        "title": unique_title,
+        "description": "This is a test resource",
+        "reward_points": 10,
+        "tags": []
+    })
+    resource_id = response.json()["id"]
+    response = client.get(f"/resources/{resource_id}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == unique_title
+    assert data["description"] == "This is a test resource"
+
+
+def test_delete_resource(client, test_db):
+    unique_title = f"Test Resource {generate_unique_string()}"
+    response = client.post("/resources/", json={
+        "title": unique_title,
+        "description": "This is a test resource",
+        "reward_points": 10,
+        "tags": []
+    })
+    resource_id = response.json()["id"]
+    response = client.delete(f"/resources/{resource_id}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == resource_id
+
+
+def test_create_comment(client, test_db):
+    user_id = test_create_user(client, test_db)
+    response = client.post("/comments/", json={
+        "user_id": user_id,
+        "comment": "This is a test comment"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["user_id"] == user_id
+    assert data["comment"] == "This is a test comment"
+    assert "id" in data
+
+
+def test_read_comments(client, test_db):
+    user_id = test_create_user(client, test_db)
+    client.post("/comments/", json={
+        "user_id": user_id,
+        "comment": "This is a test comment"
+    })
+    response = client.get("/comments/")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+
+def test_read_comment(client, test_db):
+    user_id = test_create_user(client, test_db)
+    response = client.post("/comments/", json={
+        "user_id": user_id,
+        "comment": "This is a test comment"
+    })
+    comment_id = response.json()["id"]
+    response = client.get(f"/comments/{comment_id}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["user_id"] == user_id
+    assert data["comment"] == "This is a test comment"
+
+
+def test_update_comment(client, test_db):
+    user_id = test_create_user(client, test_db)
+    response = client.post("/comments/", json={
+        "user_id": user_id,
+        "comment": "This is a test comment"
+    })
+    comment_id = response.json()["id"]
+    response = client.put(f"/comments/{comment_id}", json={
+        "comment": "This is an updated comment"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["comment"] == "This is an updated comment"
