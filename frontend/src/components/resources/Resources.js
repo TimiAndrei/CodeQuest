@@ -16,12 +16,9 @@ import "./resources.css";
 
 function Resources() {
   const [allResources, setAllResources] = useState([]);
-  const [resourceTags, setResourceTags] = useState({});
-  const [visibleResources] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState({
     sortBy: "latest",
-    tag: "",
   });
   const [page, setPage] = useState(0);
   const resourcesPerPage = 5;
@@ -32,67 +29,12 @@ function Resources() {
     title: "",
     description: "",
     reward_points: 0,
-    tags: [],
   });
-  const [newTag, setNewTag] = useState("");
   const [selectedResource, setSelectedResource] = useState(null);
   const [purchasedResources, setPurchasedResources] = useState([]);
   const [isLastPage, setIsLastPage] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [likes, setLikes] = useState({});
-  const [tags, setTags] = useState([]);
-
-  const fetchTags = useCallback(async () => {
-    try {
-      const response = await axios.get("http://localhost:8000/tags/");
-      setTags(response.data);
-    } catch (error) {
-      console.error("Error fetching tags:", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchTags();
-  }, [fetchTags]);
-
-  const fetchResourceTags = useCallback(async () => {
-    try {
-      const tagsMap = {};
-      await Promise.all(
-        allResources.map(async (resource) => {
-          const response = await axios.get(
-            `http://localhost:8000/resources/${resource.id}/tags`
-          );
-          tagsMap[resource.id] = response.data;
-        })
-      );
-      setResourceTags(tagsMap);
-    } catch (error) {
-      console.error("Error fetching resource tags:", error);
-    }
-  }, [allResources]);
-
-  useEffect(() => {
-    fetchResourceTags();
-  }, [allResources, fetchResourceTags]);
-
-  const fetchLikes = useCallback(async () => {
-    try {
-      const response = await axios.get("http://localhost:8000/resources/likes");
-      const likesMap = response.data.reduce((acc, item) => {
-        acc[item.resource_id] = item.likes;
-        return acc;
-      }, {});
-      setLikes(likesMap);
-    } catch (error) {
-      console.error("Error fetching likes:", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchLikes();
-  }, [fetchLikes]);
 
   useEffect(() => {
     const fetchAllResources = async () => {
@@ -112,35 +54,18 @@ function Resources() {
       const lowerDesc = resource.description.toLowerCase();
       const lowerSearch = searchTerm.toLowerCase();
 
-      const matchesSearch =
-        lowerTitle.includes(lowerSearch) || lowerDesc.includes(lowerSearch);
-
-      const matchesTag =
-        !filter.tag ||
-        (resourceTags[resource.id] &&
-          resourceTags[resource.id].some((tag) => tag.name === filter.tag));
-
-      return matchesSearch && matchesTag;
+      return (
+        lowerTitle.includes(lowerSearch) || lowerDesc.includes(lowerSearch)
+      );
     });
-
-    console.log("Filtered Resources:", filtered);
-
-    const sorted = filtered.sort((a, b) => {
+    return filtered.sort((a, b) => {
       if (filter.sortBy === "latest") {
         return b.id - a.id;
-      } else if (filter.sortBy === "oldest") {
-        return a.id - b.id;
-      } else if (filter.sortBy === "mostLiked") {
-        return (likes[b.id] || 0) - (likes[a.id] || 0);
       } else {
-        return 0; // Default case to handle unexpected values
+        return a.id - b.id;
       }
     });
-
-    console.log("Sorted Resources:", sorted);
-
-    return sorted;
-  }, [allResources, searchTerm, filter, likes, resourceTags]);
+  }, [allResources, searchTerm, filter]);
 
   const startIndex = page * resourcesPerPage;
   const endIndex = startIndex + resourcesPerPage;
@@ -148,13 +73,6 @@ function Resources() {
     startIndex,
     endIndex
   );
-  const totalPages = Math.ceil(
-    filteredSortedResources.length / resourcesPerPage
-  );
-
-  useEffect(() => {
-    setIsLastPage(endIndex >= filteredSortedResources.length);
-  }, [endIndex, filteredSortedResources]);
 
   const fetchPurchasedResources = useCallback(async () => {
     try {
@@ -170,9 +88,12 @@ function Resources() {
   }, [user.id]);
 
   useEffect(() => {
-    console.log("User:", user);
+    setIsLastPage(endIndex >= filteredSortedResources.length);
+  }, [endIndex, filteredSortedResources]);
+
+  useEffect(() => {
     fetchPurchasedResources();
-  }, [fetchPurchasedResources, user]);
+  }, [fetchPurchasedResources]);
 
   const handleItemClick = (id) => {
     if (purchasedResources.includes(id)) {
@@ -180,12 +101,6 @@ function Resources() {
     } else {
       toast.error("You need to buy this resource to access it.");
     }
-  };
-
-  const handleBuyButtonClick = (resource) => {
-    console.log("Selected Resource:", resource);
-    setSelectedResource(resource);
-    setShowBuyModal(true);
   };
 
   const handleDeleteResource = async () => {
@@ -207,7 +122,6 @@ function Resources() {
       title: newResource.title,
       description: newResource.description,
       reward_points: newResource.reward_points,
-      tags: newResource.tags,
     };
 
     try {
@@ -218,7 +132,6 @@ function Resources() {
         title: "",
         description: "",
         reward_points: 0,
-        tags: [],
       });
       setPage(0);
 
@@ -230,32 +143,8 @@ function Resources() {
     }
   };
 
-  const fetchUserData = async () => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8000/users/${user.id}`
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      return null;
-    }
-  };
-
   const handleBuyResource = async () => {
-    const userData = await fetchUserData();
-    if (!userData) {
-      toast.error("Failed to fetch user data.");
-      return;
-    }
-
-    console.log("User Reward Points:", userData.reward_points);
-    console.log(
-      "Selected Resource Reward Points:",
-      selectedResource.reward_points
-    );
-
-    if (userData.reward_points >= selectedResource.reward_points) {
+    if (user.reward_points >= selectedResource.reward_points) {
       try {
         await axios.post("http://localhost:8000/purchases/", {
           user_id: user.id,
@@ -284,36 +173,6 @@ function Resources() {
     setPage(0);
   };
 
-  const handleTagChange = (e) => {
-    const { options } = e.target;
-    const selectedTags = [];
-    for (const option of options) {
-      if (option.selected) {
-        selectedTags.push(parseInt(option.value, 10));
-      }
-    }
-    setNewResource((prev) => ({ ...prev, tags: selectedTags }));
-  };
-
-  const handleAddTag = async () => {
-    if (newTag.trim() === "") {
-      toast.error("Tag name cannot be empty.");
-      return;
-    }
-
-    try {
-      const response = await axios.post("http://localhost:8000/tags/", {
-        name: newTag,
-      });
-      setTags((prevTags) => [...prevTags, response.data]);
-      setNewTag("");
-      toast.success("Tag added successfully!");
-    } catch (error) {
-      console.error("Error adding tag:", error);
-      toast.error("Failed to add tag.");
-    }
-  };
-
   return (
     <div className="resources-container">
       <div className="grid-layout-resources">
@@ -338,66 +197,44 @@ function Resources() {
                 >
                   <option value="latest">Latest</option>
                   <option value="oldest">Oldest</option>
-                  <option value="mostLiked">Most Liked</option>
-                </select>
-                <select
-                  name="tag"
-                  className="filter-dropdown"
-                  value={filter.tag}
-                  onChange={handleFilterChange}
-                >
-                  <option value="">All Tags</option>
-                  {tags.map((tag) => (
-                    <option key={tag.id} value={tag.name}>
-                      {tag.name}
-                    </option>
-                  ))}
                 </select>
               </div>
             </div>
 
             <div className="list-container-resources">
               <ul className="list-resources">
-                {currentPageResources.map((resource, index) => (
+                {currentPageResources.map((resource) => (
                   <li
                     key={resource.id}
-                    className={`list-item-resources ${
-                      visibleResources.includes(index) ? "visible" : ""
-                    }`}
-                    style={{
-                      animationDelay: `${index * 0.2}s`,
-                    }}
+                    className="list-item-resources"
                     onClick={() => handleItemClick(resource.id)}
                   >
-                    <div className="resource-content">
-                      <span className="resource-title">{resource.title}</span>
-                      <div className="button-container-resources">
-                        {resource.reward_points > 0 &&
-                          !purchasedResources.includes(resource.id) && (
-                            <button
-                              className="button-resources buy-button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleBuyButtonClick(resource);
-                              }}
-                            >
-                              Buy for {resource.reward_points}
-                            </button>
-                          )}
-                        {user && user.role === "admin" && (
-                          <button
-                            className="button-resources delete-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedResource(resource);
-                              setShowDeleteModal(true);
-                            }}
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                    <span className="resource-title">{resource.title}</span>
+                    {resource.reward_points > 0 &&
+                      !purchasedResources.includes(resource.id) && (
+                        <button
+                          className="button-resources buy-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedResource(resource);
+                            setShowBuyModal(true);
+                          }}
+                        >
+                          Buy for {resource.reward_points}
+                        </button>
+                      )}
+                    {user && user.role === "admin" && (
+                      <button
+                        className="button-resources delete-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedResource(resource);
+                          setShowDeleteModal(true);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -417,10 +254,6 @@ function Resources() {
                 >
                   Next
                 </button>
-              </div>
-
-              <div className="pagination-info">
-                Page {page + 1} of {totalPages || 1}
               </div>
             </div>
 
@@ -487,51 +320,13 @@ function Resources() {
                 }
               />
             </Form.Group>
-
-            <Form.Group>
-              <Form.Label>Add New Tag</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter new tag"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-              />
-              <Button
-                className="tag-button"
-                variant="primary"
-                onClick={handleAddTag}
-              >
-                Add Tag
-              </Button>
-            </Form.Group>
-
-            <Form.Group>
-              <Form.Label>Tags</Form.Label>
-              <Form.Control
-                className="tag-select"
-                as="select"
-                multiple
-                value={newResource.tags}
-                onChange={handleTagChange}
-              >
-                {tags.map((tag) => (
-                  <option key={tag.id} value={tag.id}>
-                    {tag.name}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowAddModal(false)}>
             Close
           </Button>
-          <Button
-            className="tag-button"
-            variant="primary"
-            onClick={handleAddResource}
-          >
+          <Button variant="primary" onClick={handleAddResource}>
             Add Resource
           </Button>
         </Modal.Footer>

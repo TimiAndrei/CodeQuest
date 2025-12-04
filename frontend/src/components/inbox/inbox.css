@@ -110,7 +110,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
   margin-bottom: 10px;
   min-height: 60px;
-  min-width: 700px;
+  min-width: 600px;
 }
 
 .notification-item:hover {
@@ -129,10 +129,6 @@
 .notification-message {
   float: left;
   margin-left: 0;
-  max-width: 500px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .button-container-inbox {

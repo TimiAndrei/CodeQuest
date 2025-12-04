@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 
 
 class UserCreate(BaseModel):
@@ -102,7 +102,6 @@ class ChallengeCreate(BaseModel):
     output: str
     difficulty: str
     language: str
-    tags: List[int]
 
 
 class ChallengeRead(BaseModel):
@@ -113,9 +112,6 @@ class ChallengeRead(BaseModel):
     output: str
     difficulty: str
     language: str
-    tags: List[int]
-    friend_username: Optional[str] = None
-    status: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -134,7 +130,6 @@ class ResourceCreate(BaseModel):
     title: str
     description: str
     reward_points: int
-    tags: List[int]
 
 
 class ResourceRead(BaseModel):
@@ -160,7 +155,6 @@ class CodeSubmission(BaseModel):
     stdin: str
     expected_output: str
     user_id: int
-    time: int
 
 
 # {
@@ -237,8 +231,6 @@ class NotificationCreate(BaseModel):
     message: str
     link: str
     challenger_username: str
-    challenge_id: int
-    reminder: bool = False  # Add this flag to differentiate reminders
 
 
 class NotificationRead(BaseModel):
@@ -366,42 +358,5 @@ class ChallengeLikeDelete(BaseModel):
         from_attributes = True
 
 
-class CommentLikeCreate(BaseModel):
-    user_id: int
-    comment_id: int
-
-
-class CommentLikeRead(BaseModel):
-    user_id: int
-    comment_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class CommentLikeDelete(BaseModel):
-    user_id: int
-    comment_id: int
-
-    class Config:
-        from_attributes = True
-
-
 class PointsUpdate(BaseModel):
     points: int
-
-
-class TagRead(BaseModel):
-    id: int
-    name: str
-
-    class Config:
-        from_attributes = True
-
-
-class TagCreate(BaseModel):
-    name: str
-
-
-class TagUpdate(BaseModel):
-    name: str = None

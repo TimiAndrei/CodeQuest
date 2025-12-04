@@ -15,7 +15,6 @@ function Dashboard() {
   const [rank, setRank] = useState("");
   const [progress, setProgress] = useState(0);
   const [maxScore, setMaxScore] = useState(100); // Add maxScore state
-  const [totalChallenges, setTotalChallenges] = useState(0); // Add totalChallenges state
 
   useEffect(() => {
     const fetchUserBadgesAndScore = async () => {
@@ -56,12 +55,6 @@ function Dashboard() {
           setProgress(100);
           setMaxScore(userScore); // Set maxScore for Legend
         }
-
-        const challengesResponse = await axios.get(
-          `http://localhost:8000/users/challenges/`,
-          { params: { user_id: user.id } }
-        );
-        setTotalChallenges(challengesResponse.data.length);
       } catch (err) {
         console.error("Error fetching user data:", err);
         setError("Failed to load user data.");
@@ -93,7 +86,6 @@ function Dashboard() {
               <div className="card-text-dashboard">
                 <h3>Your Rank: {rank}</h3>
                 <p>Score: {score}</p>
-                <p>Total Challenges: {totalChallenges}</p> {/* Add this line */}
                 <p>Reward points: {rewardPoints}</p>
               </div>
               <div

@@ -1,19 +1,14 @@
 from datetime import datetime, timedelta, timezone
-from schemas import CommentLikeCreate, CommentLikeDelete, CommentLikeRead, NotificationCreate, NotificationRead, PointsUpdate, PurchaseCreate, PurchaseRead, TagCreate, TagRead
+from schemas import NotificationCreate, NotificationRead, PointsUpdate, PurchaseCreate, PurchaseRead
 import logging
-from fastapi import FastAPI, HTTPException, Depends, Query, Body
+from fastapi import FastAPI, HTTPException, Depends, Query
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from models import (
     Base,
-    ChallengeHistory,
-    ChallengeTag,
-    CommentLike,
     Notification,
     Purchase,
     ResourceTag,
-    Tag,
     engine,
     SessionLocal,
     User,
@@ -78,13 +73,11 @@ import secrets
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# SWAP DATABASE_URL IF RUNNING IN DOCKER
-# DATABASE_URL = "postgresql://postgres:admin@localhost:5433/test_db"
-
 DATABASE_URL = os.getenv("DATABASE_URL")
 logger.info(f"DATABASE_URL: {DATABASE_URL}")
 
 JUDGE0_URL = os.getenv("JUDGE0_URL")
+RAPID_API_KEY = os.getenv("RAPID_API_KEY")
 
 app = FastAPI()
 security = HTTPBasic()
@@ -145,79 +138,13 @@ def read_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
 def create_notification(
     notification: NotificationCreate, db: Session = Depends(get_db)
 ):
-    # Check if the sender exists
-    sender = db.query(User).filter(
-        User.username == notification.challenger_username).first()
-    if not sender:
-        raise HTTPException(status_code=404, detail="Sender not found")
-
-    # Check if the challenge already exists in the ChallengeHistory table
-    existing_history = db.query(ChallengeHistory).filter(
-        ChallengeHistory.sender_id == sender.id,
-        ChallengeHistory.recipient_id == notification.recipient_id,
-        ChallengeHistory.challenge_id == notification.challenge_id
-    ).first()
-
-    if existing_history:
-        if notification.reminder:
-            # Check if a reminder notification already exists
-            existing_reminder = db.query(Notification).filter(
-                Notification.recipient_id == notification.recipient_id,
-                Notification.challenge_id == notification.challenge_id,
-                # Check if it's a reminder
-                Notification.message.like("Reminder:%")
-            ).first()
-
-            if existing_reminder:
-                raise HTTPException(
-                    status_code=400,
-                    detail="A reminder for this challenge has already been sent."
-                )
-
-            # Allow sending a reminder if no existing reminder is found
-            db_notification = Notification(
-                recipient_id=notification.recipient_id,
-                message=notification.message,  # Use the reminder message
-                link=notification.link,
-                challenger_username=notification.challenger_username,
-                challenge_id=notification.challenge_id
-            )
-            db.add(db_notification)
-            db.commit()
-            db.refresh(db_notification)
-            return db_notification
-
-        # If the challenge is pending, inform the user that it was already sent
-        if existing_history.status == "pending":
-            raise HTTPException(
-                status_code=400,
-                detail="This challenge has already been sent and is pending."
-            )
-        # If the challenge is completed, inform the user that it was already completed
-        elif existing_history.status == "completed":
-            raise HTTPException(
-                status_code=400,
-                detail="This challenge has already been completed."
-            )
-
-    # If the challenge does not exist in history, add it to ChallengeHistory and create a notification
-    db_challenge_history = ChallengeHistory(
-        sender_id=sender.id,
-        recipient_id=notification.recipient_id,
-        challenge_id=notification.challenge_id,
-        status="pending"  # Default status when a challenge is sent
-    )
-    db.add(db_challenge_history)
-
     db_notification = Notification(
         recipient_id=notification.recipient_id,
         message=notification.message,
         link=notification.link,
         challenger_username=notification.challenger_username,
-        challenge_id=notification.challenge_id
     )
     db.add(db_notification)
-
     db.commit()
     db.refresh(db_notification)
     return db_notification
@@ -395,126 +322,45 @@ def create_challenge(ch_data: ChallengeCreate, db: Session = Depends(get_db)):
     db.add(db_challenge)
     db.commit()
     db.refresh(db_challenge)
-
-    # Associate tags with the challenge
-    for tag_id in ch_data.tags:
-        challenge_tag = ChallengeTag(
-            challenge_id=db_challenge.id, tag_id=tag_id)
-        db.add(challenge_tag)
-    db.commit()
-
-    # Fetch the tags to include in the response
-    tag_ids = [tag.tag_id for tag in db.query(
-        ChallengeTag).filter_by(challenge_id=db_challenge.id).all()]
-
-    return {
-        "id": db_challenge.id,
-        "title": db_challenge.title,
-        "description": db_challenge.description,
-        "input": db_challenge.input,
-        "output": db_challenge.output,
-        "difficulty": db_challenge.difficulty,
-        "language": db_challenge.language,
-        "tags": tag_ids
-    }
+    return db_challenge
 
 
 @app.get("/challenges/", response_model=List[ChallengeRead])
-def read_challenges(skip: int = 0, limit: int = 10, user_id: Optional[int] = None, db: Session = Depends(get_db)):
+def read_challenges(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     challenges = db.query(Challenge).offset(skip).limit(limit).all()
-    challenge_list = []
-    for challenge in challenges:
-        challenge_dict = challenge.__dict__.copy()
-        challenge_dict['tags'] = [tag.tag_id for tag in db.query(
-            ChallengeTag).filter_by(challenge_id=challenge.id).all()]
-
-        # Add status based on ChallengeHistory if user_id is provided
-        if user_id:
-            history = db.query(ChallengeHistory).filter(
-                ChallengeHistory.challenge_id == challenge.id,
-                (ChallengeHistory.sender_id == user_id) | (
-                    ChallengeHistory.recipient_id == user_id)
-            ).first()
-            if history:
-                challenge_dict['status'] = history.status
-            else:
-                # Default to "unsolved" if no history exists
-                challenge_dict['status'] = "unsolved"
-        else:
-            # Default to None if no user_id is provided
-            challenge_dict['status'] = None
-        challenge_list.append(challenge_dict)
-
-    return challenge_list
+    return challenges
 
 
-@app.get("/challenges/like/{challenge_id}", response_model=List[ChallengeLikeRead])
-def get_challenge_like(challenge_id: int, db: Session = Depends(get_db)):
-    likes = db.query(ChallengeLike).filter(
-        ChallengeLike.challenge_id == challenge_id).all()
-    return likes
+@app.get("/challenges/filter", response_model=List[ChallengeRead])
+def filter_challenges(
+    sort_by: str = "latest",
+    language: Optional[str] = None,
+    difficulty: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(Challenge)
 
+    if language:
+        query = query.filter(Challenge.language == language)
 
-@app.post("/challenges/like", response_model=ChallengeLikeRead)
-def add_or_remove_challenge_like(challenge_like: ChallengeLikeCreate, db: Session = Depends(get_db)):
-    existing_like = db.query(ChallengeLike).filter(
-        ChallengeLike.challenge_id == challenge_like.challenge_id,
-        ChallengeLike.user_id == challenge_like.user_id
-    ).first()
-    if existing_like:
-        db.delete(existing_like)
-        db.commit()
-        return existing_like
+    if difficulty:
+        query = query.filter(Challenge.difficulty == difficulty)
 
-    new_like = ChallengeLike(**challenge_like.dict())
-    db.add(new_like)
-    db.commit()
-    db.refresh(new_like)
-    return new_like
+    if sort_by == "latest":
+        query = query.order_by(Challenge.id.desc())
+    elif sort_by == "oldest":
+        query = query.order_by(Challenge.id.asc())
 
-
-@app.delete("/challenges/like/", response_model=ChallengeLikeRead)
-def delete_challenge_like(challenge_id: int, user_id: int, db: Session = Depends(get_db)):
-    like = db.query(ChallengeLike).filter(ChallengeLike.challenge_id ==
-                                          challenge_id, ChallengeLike.user_id == user_id).first()
-    if like is None:
-        raise HTTPException(status_code=404, detail="Like not found")
-    db.delete(like)
-    db.commit()
-    return like
-
-
-@app.get("/challenges/likes", response_model=List[dict])
-def get_challenges_likes(db: Session = Depends(get_db)):
-    challenges_likes = db.query(
-        Challenge.id,
-        func.count(ChallengeLike.challenge_id).label("likes")
-    ).outerjoin(ChallengeLike, Challenge.id == ChallengeLike.challenge_id).group_by(Challenge.id).all()
-
-    return [{"challenge_id": challenge.id, "likes": challenge.likes} for challenge in challenges_likes]
+    return query.all()
 
 
 @app.get("/challenges/{challenge_id}", response_model=ChallengeRead)
-def read_challenge(challenge_id: int, user_id: Optional[int] = None, db: Session = Depends(get_db)):
-    challenge = db.query(Challenge).filter(
+def read_challenge(challenge_id: int, db: Session = Depends(get_db)):
+    db_challenge = db.query(Challenge).filter(
         Challenge.id == challenge_id).first()
-    if not challenge:
-        raise HTTPException(status_code=404, detail="Challenge not found")
-
-    challenge_dict = challenge.__dict__.copy()
-    challenge_dict['tags'] = [tag.tag_id for tag in db.query(
-        ChallengeTag).filter_by(challenge_id=challenge.id).all()]
-
-    # Add status based on ChallengeHistory if user_id is provided
-    if user_id:
-        history = db.query(ChallengeHistory).filter(
-            ChallengeHistory.challenge_id == challenge.id,
-            (ChallengeHistory.sender_id == user_id) | (
-                ChallengeHistory.recipient_id == user_id)
-        ).first()
-        challenge_dict['status'] = history.status if history else None
-
-    return challenge_dict
+    if db_challenge is None:
+        raise HTTPException(status_code=404, detail="challenge not found")
+    return db_challenge
 
 
 @app.put("/challenges/{challenge_id}", response_model=ChallengeRead)
@@ -559,49 +405,7 @@ def create_resource(resource: ResourceCreate, db: Session = Depends(get_db)):
     db.add(db_resource)
     db.commit()
     db.refresh(db_resource)
-
-    # Associate tags with the resource
-    for tag_id in resource.tags:
-        resource_tag = ResourceTag(resource_id=db_resource.id, tag_id=tag_id)
-        db.add(resource_tag)
-    db.commit()
-
     return db_resource
-
-
-@app.get("/tags/", response_model=List[TagRead])
-def read_tags(db: Session = Depends(get_db)):
-    tags = db.query(Tag).all()
-    return tags
-
-
-@app.post("/tags/", response_model=TagRead)
-def create_tag(tag: TagCreate, db: Session = Depends(get_db)):
-    db_tag = db.query(Tag).filter(Tag.name == tag.name).first()
-    if db_tag:
-        raise HTTPException(status_code=400, detail="Tag already exists")
-    new_tag = Tag(name=tag.name)
-    db.add(new_tag)
-    db.commit()
-    db.refresh(new_tag)
-    return new_tag
-
-
-@app.get("/resources/{resource_id}/tags", response_model=List[TagRead])
-def read_resource_tags(resource_id: int, db: Session = Depends(get_db)):
-    resource_tags = db.query(Tag).join(ResourceTag).filter(
-        ResourceTag.resource_id == resource_id).all()
-    return resource_tags
-
-
-@app.get("/resources/likes", response_model=List[dict])
-def get_resources_likes(db: Session = Depends(get_db)):
-    resources_likes = db.query(
-        Resource.id,
-        func.count(ResourceLike.resource_id).label("likes")
-    ).outerjoin(ResourceLike, Resource.id == ResourceLike.resource_id).group_by(Resource.id).all()
-
-    return [{"resource_id": resource.id, "likes": resource.likes} for resource in resources_likes]
 
 
 @app.get("/resources/filter", response_model=List[ResourceRead])
@@ -722,18 +526,6 @@ def submit_code(
     if db_challenge is None:
         raise HTTPException(status_code=404, detail="Challenge not found")
 
-    # Check if the user has already solved this challenge
-    user_challenge = (
-        db.query(UserChallenge)
-        .filter(UserChallenge.user_id == submission.user_id)
-        .filter(UserChallenge.challenge_id == submission.challenge_id)
-        .first()
-    )
-    if user_challenge:
-        raise HTTPException(
-            status_code=400, detail="You have already solved this challenge"
-        )
-
     try:
         code_b64 = base64.b64encode(submission.source_code.encode("utf-8")).decode(
             "utf-8"
@@ -748,6 +540,7 @@ def submit_code(
 
     create_submission = requests.post(
         f"{JUDGE0_URL}/submissions?base64_encoded=true&wait=true",
+        headers={"X-RapidAPI-Key": RAPID_API_KEY},
         json={
             "source_code": code_b64,
             "language_id": get_language_id(db_challenge.language),
@@ -765,11 +558,11 @@ def submit_code(
     submission_token = create_submission.json().get("token")
     if not submission_token:
         raise HTTPException(
-            status_code=500, detail="Submission token not received."
-        )
+            status_code=500, detail="Submission token not received.")
 
     result = requests.get(
         f"{JUDGE0_URL}/submissions/{submission_token}?base64_encoded=false",
+        headers={"X-RapidAPI-Key": RAPID_API_KEY},
     )
 
     if result.status_code != 200:
@@ -782,8 +575,10 @@ def submit_code(
 
     # Check for compilation or runtime errors
     if result_data["status"]["id"] != 3:  # Status ID 3 means "Accepted"
-        error_message = result_data.get("message", "")
-        stderr = result_data.get("stderr", "")
+        error_message = base64.b64decode(
+            result_data.get("message", "")).decode("utf-8")
+        stderr = base64.b64decode(
+            result_data.get("stderr", "")).decode("utf-8")
         raise HTTPException(
             status_code=400,
             detail=f"Error: {result_data['status']['description']}\nMessage: {error_message}\nStderr: {stderr}",
@@ -814,67 +609,12 @@ def submit_code(
             )
             if first_problem_badge:
                 user_badge = UserBadge(
-                    user_id=user.id, badge_id=first_problem_badge.id
-                )
+                    user_id=user.id, badge_id=first_problem_badge.id)
                 db.add(user_badge)
                 db.commit()
                 badge_awarded = first_problem_badge.title
                 print(
                     f"User {user.id} awarded badge: {first_problem_badge.title}")
-
-        # Add the solved challenge to user challenges
-        user_challenge = UserChallenge(
-            user_id=user.id, challenge_id=db_challenge.id, solution=submission.source_code
-        )
-        db.add(user_challenge)
-        db.commit()
-        print(f"User {user.id} solved challenge {db_challenge.id}")
-
-        # Update the ChallengeHistory table to mark the challenge as completed
-        challenge_history = db.query(ChallengeHistory).filter(
-            ChallengeHistory.challenge_id == submission.challenge_id,
-            ChallengeHistory.recipient_id == submission.user_id,
-        ).first()
-        if challenge_history:
-            challenge_history.status = "completed"
-            db.commit()
-
-            # Award bonus points to the sender
-            sender = db.query(User).filter(
-                User.id == challenge_history.sender_id).first()
-            if sender:
-                # 10% of the awarded points
-                bonus_points_sender = int(points_awarded * 0.1)
-                sender.reward_points += bonus_points_sender
-                db.commit()
-                print(
-                    f"Sender {sender.id} awarded bonus points: {bonus_points_sender} for challenge {db_challenge.id}"
-                )
-
-                # Send notification to the sender
-                notification_message = (
-                    f"Your friend {user.username} completed challenge '{db_challenge.title}' "
-                    f"within {submission.time} seconds and you were awarded {bonus_points_sender} bonus points."
-                )
-                db_notification = Notification(
-                    recipient_id=sender.id,
-                    message=notification_message,
-                    link=f"/soloChallenge/{db_challenge.id}",
-                    challenger_username=user.username,
-                    challenge_id=db_challenge.id,
-                )
-                db.add(db_notification)
-                db.commit()
-                print(
-                    f"Notification sent to sender {sender.id}: {notification_message}")
-
-            # Award bonus points to the recipient
-            bonus_points_recipient = int(points_awarded * 0.1)
-            user.reward_points += bonus_points_recipient
-            db.commit()
-            print(
-                f"Recipient {user.id} awarded bonus points: {bonus_points_recipient} for completing challenge {db_challenge.id}"
-            )
 
     return {
         "status": CodeSubmissionStatus(
@@ -885,7 +625,7 @@ def submit_code(
         "stderr": result_data.get("stderr", "") or "",
         "expected_output": db_challenge.output,
         "actual_output": result_data.get("stdout", ""),
-        "time": str(submission.time),
+        "time": result_data.get("time", ""),
         "memory": result_data.get("memory", 0),
         "token": submission_token,
         "compile_output": result_data.get("compile_output", "") or "",
@@ -893,13 +633,6 @@ def submit_code(
         "points_awarded": points_awarded,
         "badge_awarded": badge_awarded,
     }
-
-
-@app.get("/challenges/{challenge_id}/tags", response_model=List[TagRead])
-def read_challenge_tags(challenge_id: int, db: Session = Depends(get_db)):
-    tags = db.query(Tag).join(ChallengeTag).filter(
-        ChallengeTag.challenge_id == challenge_id).all()
-    return tags
 
 
 @app.get(
@@ -1011,47 +744,6 @@ def update_comment(
     db.refresh(db_comment)
     return db_comment
 
-# comment likes endpoints
-
-
-@app.post("/comments/like", response_model=CommentLikeRead)
-def add_comment_like(comment_like: CommentLikeCreate, db: Session = Depends(get_db)):
-    existing_like = db.query(CommentLike).filter(
-        CommentLike.comment_id == comment_like.comment_id,
-        CommentLike.user_id == comment_like.user_id
-    ).first()
-    if existing_like:
-        db.delete(existing_like)
-        db.commit()
-        return existing_like
-
-    new_like = CommentLike(**comment_like.dict())
-    db.add(new_like)
-    db.commit()
-    db.refresh(new_like)
-    return new_like
-
-
-@app.delete("/comments/like", response_model=CommentLikeDelete)
-def delete_comment_like(comment_like: CommentLikeDelete, db: Session = Depends(get_db)):
-    existing_like = db.query(CommentLike).filter(
-        CommentLike.comment_id == comment_like.comment_id,
-        CommentLike.user_id == comment_like.user_id
-    ).first()
-    if not existing_like:
-        raise HTTPException(status_code=404, detail="Like not found")
-
-    db.delete(existing_like)
-    db.commit()
-    return comment_like
-
-
-@app.get("/comments/{comment_id}/likes", response_model=List[CommentLikeRead])
-def get_comment_likes(comment_id: int, db: Session = Depends(get_db)):
-    likes = db.query(CommentLike).filter(
-        CommentLike.comment_id == comment_id).all()
-    return likes
-
 
 @app.get("/challenges/{challenge_id}/comments", response_model=List[CommentRead])
 def get_challenge_comments(challenge_id: int, db: Session = Depends(get_db)):
@@ -1064,15 +756,19 @@ def get_challenge_comments(challenge_id: int, db: Session = Depends(get_db)):
     return comments
 
 
-@app.post("/challenges/{challenge_id}/comments", response_model=ChallengeCommentRead)
+@app.post(
+    "/challenges/{challenge_id}/comments",
+    response_model=ChallengeCommentRead,
+)
 def add_challenge_comment(
-    challenge_id: int,
-    challenge_comment: ChallengeCommentCreate = Body(...),
-    db: Session = Depends(get_db)
+    challenge_id: int, user_id: int, comment: str, db: Session = Depends(get_db)
 ):
-    # Associate the comment with the challenge
+    db_comment = Comment(user_id=user_id, comment=comment)
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
     challenge_comment = ChallengeComment(
-        challenge_id=challenge_id, comment_id=challenge_comment.comment_id
+        challenge_id=challenge_id, comment_id=db_comment.id
     )
     db.add(challenge_comment)
     db.commit()
@@ -1092,12 +788,14 @@ def get_resource_comments(resource_id: int, db: Session = Depends(get_db)):
 
 @app.post("/resources/{resource_id}/comments", response_model=ResourceCommentRead)
 def add_resource_comment(
-    resource_comment: ResourceCommentCreate = Body(...),
-    db: Session = Depends(get_db)
+    resource_id: int, user_id: int, comment: str, db: Session = Depends(get_db)
 ):
-    # Associate the comment with the resource
+    db_comment = Comment(user_id=user_id, comment=comment)
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
     resource_comment = ResourceComment(
-        resource_id=resource_comment.resource_id, comment_id=resource_comment.comment_id
+        resource_id=resource_id, comment_id=db_comment.id
     )
     db.add(resource_comment)
     db.commit()
@@ -1115,8 +813,6 @@ def delete_comment(comment_id: int, db: Session = Depends(get_db)):
     comment = db.query(Comment).filter(Comment.id == comment_id).first()
     if comment is None:
         raise HTTPException(status_code=404, detail="Comment not found")
-
-    db.query(CommentLike).filter(CommentLike.comment_id == comment_id).delete()
     db.delete(comment)
     db.commit()
     return comment
@@ -1193,7 +889,7 @@ def update_reward_points(user_id: int, points_update: PointsUpdate, db: Session 
 
     user.reward_points += points_update.points
     # Reset the reward timer to 24 hours from now
-    user.reward_timer = datetime.now(timezone.utc) + timedelta(hours=24)
+    user.reward_timer = datetime.now(timezone.utc) + timedelta(minutes=1)
     db.commit()
     return {"message": "Reward points updated successfully", "points": points_update.points}
 
@@ -1251,24 +947,6 @@ def add_resource_like(resource_id: int, user_id: int, db: Session = Depends(get_
     return like
 
 
-@app.post("/resources/like", response_model=ResourceLikeRead)
-def add_or_remove_resource_like(resource_like: ResourceLikeCreate, db: Session = Depends(get_db)):
-    existing_like = db.query(ResourceLike).filter(
-        ResourceLike.resource_id == resource_like.resource_id,
-        ResourceLike.user_id == resource_like.user_id
-    ).first()
-    if existing_like:
-        db.delete(existing_like)
-        db.commit()
-        return existing_like
-
-    new_like = ResourceLike(**resource_like.dict())
-    db.add(new_like)
-    db.commit()
-    db.refresh(new_like)
-    return new_like
-
-
 @app.delete("/resources/like/", response_model=ResourceLikeRead)
 def delete_resource_like(resource_id: int, user_id: int, db: Session = Depends(get_db)):
     like = db.query(ResourceLike).filter(ResourceLike.resource_id ==
@@ -1298,25 +976,10 @@ def get_user_challenges(user_id: int, db: Session = Depends(get_db)):
 
 @app.post("/users/challenges/", response_model=UserChallengeRead)
 def add_user_challenge(user_id: int, challenge_id: int, solution: str, db: Session = Depends(get_db)):
-    # Add the challenge to the UserChallenge table
     user_challenge = UserChallenge(
-        user_id=user_id,
-        challenge_id=challenge_id,
-        solution=solution
-    )
+        user_id=user_id, challenge_id=challenge_id, solution=solution)
     db.add(user_challenge)
-
-    # Add the challenge to the ChallengeHistory table
-    challenge_history = ChallengeHistory(
-        sender_id=None,  # No sender in this case
-        recipient_id=user_id,
-        challenge_id=challenge_id,
-        status="completed"  # Mark as completed since it's manually added
-    )
-    db.add(challenge_history)
-
     db.commit()
-    db.refresh(user_challenge)
     return user_challenge
 
 
@@ -1340,74 +1003,3 @@ def delete_user_challenge(user_id: int, challenge_id: int, db: Session = Depends
     db.delete(user_challenge)
     db.commit()
     return user_challenge
-
-
-@app.get("/users/{user_id}/solved-challenges", response_model=List[ChallengeRead])
-def get_user_solved_challenges(user_id: int, db: Session = Depends(get_db)):
-    solved_challenges = db.query(Challenge).join(UserChallenge).filter(
-        UserChallenge.user_id == user_id).all()
-    challenge_list = []
-    for challenge in solved_challenges:
-        challenge_dict = challenge.__dict__.copy()
-        challenge_dict['tags'] = [tag.tag_id for tag in db.query(
-            ChallengeTag).filter_by(challenge_id=challenge.id).all()]
-        challenge_list.append(challenge_dict)
-    return challenge_list
-
-
-@app.get("/users/{user_id}/sent-challenges", response_model=List[ChallengeRead])
-def get_user_sent_challenges(user_id: int, db: Session = Depends(get_db)):
-    sent_challenges = db.query(ChallengeHistory).join(Challenge).filter(
-        ChallengeHistory.sender_id == user_id
-    ).all()
-
-    challenge_list = []
-    for record in sent_challenges:
-        challenge_dict = record.challenge.__dict__.copy()
-        challenge_dict['friend_username'] = record.recipient.username
-        challenge_dict['tags'] = [tag.tag_id for tag in db.query(
-            ChallengeTag).filter_by(challenge_id=record.challenge.id).all()]
-
-        # Check if the recipient has completed the challenge
-        recipient_history = db.query(ChallengeHistory).filter(
-            ChallengeHistory.recipient_id == record.recipient_id,
-            ChallengeHistory.challenge_id == record.challenge_id,
-            ChallengeHistory.status == "completed"
-        ).first()
-
-        challenge_dict['status'] = "completed" if recipient_history else "pending"
-        challenge_list.append(challenge_dict)
-
-    return challenge_list
-
-
-@app.get("/users/{user_id}/received-challenges", response_model=List[ChallengeRead])
-def get_user_received_challenges(user_id: int, db: Session = Depends(get_db)):
-    received_challenges = (
-        db.query(
-            ChallengeHistory,
-            Challenge,
-            User.username.label("sender_username")
-        )
-        .join(Challenge, Challenge.id == ChallengeHistory.challenge_id)
-        .join(User, ChallengeHistory.sender_id == User.id)
-        .filter(ChallengeHistory.recipient_id == user_id)
-        .all()
-    )
-
-    challenge_list = []
-    for record in received_challenges:
-        challenge_history = record[0]
-        challenge = record[1]
-        sender_username = record[2]
-
-        challenge_dict = challenge.__dict__.copy()
-        # Use friend_username
-        challenge_dict['friend_username'] = sender_username
-        challenge_dict['tags'] = [
-            tag.tag_id for tag in db.query(ChallengeTag).filter_by(challenge_id=challenge.id).all()
-        ]
-        challenge_dict['status'] = challenge_history.status
-
-        challenge_list.append(challenge_dict)
-    return challenge_list

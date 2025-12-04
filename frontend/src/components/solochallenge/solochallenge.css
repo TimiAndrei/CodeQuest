@@ -11,7 +11,7 @@
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
 }
 
@@ -30,12 +30,12 @@
 .grid-layout-solo {
   display: grid;
   grid-template-columns: 45% 55%;
-  width: 90%;
+  width: 100%;
+  height: 100%;
   gap: 20px;
 }
 
 .grid-item-solo {
-  margin-top: 20px;
   padding: 20px;
   background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
   border-radius: 16px;
@@ -48,6 +48,7 @@
 
 .grid-item-solo.left-solo {
   background-color: rgba(45, 45, 45, 0.5);
+  margin-left: 5%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -58,6 +59,7 @@
 
 .grid-item-solo.right-solo {
   background-color: rgba(45, 45, 45, 0.5);
+  margin-right: 5%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -102,6 +104,7 @@
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
 .card-solo::-webkit-scrollbar-track {
   background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
   border-radius: 16px;
@@ -137,7 +140,6 @@
   align-items: center;
   gap: 15px;
   margin-bottom: 15px;
-  margin-top: -15px;
 }
 
 .timer-button {
@@ -161,6 +163,10 @@
   background-color: #0056b3;
 }
 
+.timer-button.start {
+  background-color: #007bff;
+}
+
 .timer-button.pause {
   background-color: #ff6347;
 }
@@ -180,8 +186,7 @@
   transition: box-shadow 0.3s ease, border 0.3s ease;
 }
 
-.submit-button:hover,
-.save-button:hover {
+.submit-button:hover {
   background-color: #218838;
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -194,72 +199,24 @@
   color: #fff;
 }
 
+textarea {
+  width: 100%;
+  max-height: 350px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  font-family: monospace;
+  resize: none;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  color: #fff;
+}
+
+.textarea-disabled {
+  background-color: #847676;
+  cursor: not-allowed;
+}
+
 .recommended-resources {
   color: #fff;
-}
-
-.challenge-comments-section {
-  width: 91%;
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  margin-top: 20px;
-  margin-left: 25px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  color: #fff;
-}
-
-.challenge-comments-section:hover,
-.comment-card:hover,
-.grid-item-solo.left-solo:hover,
-.grid-item-solo.right-solo:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.challenge-comments-header {
-  display: flex;
-  justify-content: space-between;
-}
-
-.edit-button,
-.like-button,
-.add-butotn,
-.timer-button.start {
-  background-color: #007bff;
-}
-
-.edit-button:hover,
-.like-button:hover,
-.add-button:hover,
-.timer-button.start:hover {
-  background-color: #0056b3;
-}
-
-.delete-button,
-.cancel-button {
-  background-color: #dc3545;
-}
-
-.delete-button:hover,
-.cancel-button:hover {
-  background-color: #c82333;
-}
-
-.timer-button.pause {
-  background-color: #86bc25;
-}
-
-.timer-button.pause:hover {
-  background-color: #76a520;
-}
-
-.like-button {
-  margin-top: -75px;
 }
