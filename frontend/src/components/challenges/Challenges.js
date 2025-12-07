@@ -47,7 +47,7 @@ function Challenges() {
     try {
       const data = await getChallengesWithPagination(page * 5, 5);
       setChallenges(data);
-      setIsLastPage(data.length < 5);
+      setIsLastPage(data.length <= 5);
     } catch (error) {
       console.error("Error fetching challenges:", error);
     }

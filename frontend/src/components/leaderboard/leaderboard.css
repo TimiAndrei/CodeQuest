@@ -97,7 +97,7 @@
   max-width: 60%;
 }
 
-.list-item-leaderboard span:nth-child(2){
+.list-item-leaderboard span:nth-child(2) {
   max-width: 20%;
 }
 .list-item-leaderboard span:nth-child(3) {
@@ -118,20 +118,6 @@
   justify-content: center;
   gap: 10px;
   margin-top: 10px;
-}
-
-.pagination-button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: #fff;
-  cursor: pointer;
-}
-
-.pagination-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
 }
 
 .see-profile-button {

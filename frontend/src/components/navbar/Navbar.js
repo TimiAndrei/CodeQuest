@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../authentification/AuthContext";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./navbar.css";
 
@@ -28,10 +28,6 @@ function NavBar() {
       fetchNotifications();
     }
   }, [user]);
-
-  const updateNotifications = (updatedNotifications) => {
-    setNotifications(updatedNotifications);
-  };
 
   const unreadCount = notifications.length;
 

@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  addResources,
-  getResourcesWithPagination,
-  deleteResource,
-} from "../../api/resources";
+import axios from "axios";
+import { addResources, deleteResource } from "../../api/resources";
 import { useAuth } from "../authentification/AuthContext";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
@@ -19,49 +16,67 @@ function Resources() {
   const [filteredResources, setFilteredResources] = useState([]);
   const [page, setPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
-  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
   const [newResource, setNewResource] = useState({
     title: "",
     description: "",
   });
-  const [showModal, setShowModal] = useState(false);
+  const [filter, setFilter] = useState({
+    sortBy: "latest",
+  });
+
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async () => {
     try {
-      const data = await getResourcesWithPagination(page * 5, 5);
-
-      const filledData = [...data];
-      while (filledData.length < 5) {
-        filledData.push({
-          id: `placeholder-${filledData.length}`,
-          title: "",
-          description: "",
-          isPlaceholder: true,
-        });
-      }
-
-      setResources(filledData);
-      setIsLastPage(data.length < 5);
+      const response = await axios.get("http://localhost:8000/resources", {
+        params: { skip: page * 5, limit: 5 },
+      });
+      setResources(response.data);
+      setIsLastPage(response.data.length < 5);
     } catch (error) {
       console.error("Error fetching resources:", error);
     }
-  };
+  }, [page]);
+
+  const fetchFilteredResources = useCallback(async () => {
+    try {
+      const params = {
+        skip: page * 5,
+        limit: 5,
+        sort_by: filter.sortBy,
+      };
+      const response = await axios.get(
+        "http://localhost:8000/resources/filter",
+        { params }
+      );
+      setFilteredResources(response.data);
+      setIsLastPage(response.data.length < 5);
+    } catch (error) {
+      console.error("Error fetching filtered resources:", error);
+    }
+  }, [page, filter]);
 
   useEffect(() => {
     fetchResources();
-  }, [page]);
+  }, [page, fetchResources]);
 
   useEffect(() => {
-    const filtered = resources.filter(
-      (resource) =>
-        resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.description.toLowerCase().includes(searchTerm.toLowerCase())
+    fetchFilteredResources();
+  }, [filter, page, fetchFilteredResources]);
+
+  useEffect(() => {
+    setFilteredResources(
+      resources.filter(
+        (resource) =>
+          resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          resource.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
     );
-    setFilteredResources(filtered);
   }, [searchTerm, resources]);
 
-  const handleExploreClick = (id) => {
+  const handleItemClick = (id) => {
     navigate(`/resource/${id}`);
   };
 
@@ -94,11 +109,20 @@ function Resources() {
         description: "",
       });
       setPage(0);
-      fetchResources(); // Reload resources to display the new resource
+      fetchResources();
     } catch (error) {
       console.error("Error adding resources:", error);
       toast.error("Failed to add resource.");
     }
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilter((prevFilter) => ({
+      ...prevFilter,
+      [name]: value,
+    }));
+    setPage(0); // Reset to the first page when filter changes
   };
 
   return (
@@ -115,6 +139,17 @@ function Resources() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+              <div className="filter-container">
+                <select
+                  name="sortBy"
+                  className="filter-dropdown"
+                  value={filter.sortBy}
+                  onChange={handleFilterChange}
+                >
+                  <option value="latest">Latest</option>
+                  <option value="oldest">Oldest</option>
+                </select>
+              </div>
             </div>
 
             <div className="list-container-resources">
@@ -122,28 +157,20 @@ function Resources() {
                 {filteredResources.map((resource) => (
                   <li
                     key={resource.id}
-                    className={`list-item-resources ${
-                      resource.isPlaceholder ? "placeholder" : ""
-                    }`}
+                    className="list-item-resources"
+                    onClick={() => handleItemClick(resource.id)}
                   >
                     <span>{resource.title}</span>
-                    {!resource.isPlaceholder && (
-                      <div className="button-container-resources">
-                        <button
-                          className="button-resources explore-button"
-                          onClick={() => handleExploreClick(resource.id)}
-                        >
-                          Explore
-                        </button>
-                        {user && user.role === "admin" && (
-                          <button
-                            className="button-resources delete-button"
-                            onClick={() => handleDeleteResource(resource.id)}
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
+                    {user && user.role === "admin" && (
+                      <button
+                        className="button-resources delete-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteResource(resource.id);
+                        }}
+                      >
+                        Delete
+                      </button>
                     )}
                   </li>
                 ))}

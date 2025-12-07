@@ -372,6 +372,21 @@ def create_resource(resource: ResourceCreate, db: Session = Depends(get_db)):
     return db_resource
 
 
+@app.get("/resources/filter", response_model=List[ResourceRead])
+def filter_resources(
+    sort_by: str = "latest",
+    db: Session = Depends(get_db)
+):
+    query = db.query(Resource)
+
+    if sort_by == "latest":
+        query = query.order_by(Resource.id.desc())
+    elif sort_by == "oldest":
+        query = query.order_by(Resource.id.asc())
+
+    return query.all()
+
+
 @app.get("/resources/{resource_id}", response_model=ResourceRead)
 def read_resource(resource_id: int, db: Session = Depends(get_db)):
     db_resource = db.query(Resource).filter(Resource.id == resource_id).first()
