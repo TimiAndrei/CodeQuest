@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../authentification/AuthContext";
@@ -19,6 +19,7 @@ function SoloResource() {
   const [users, setUsers] = useState({});
   const [resourceLikes, setResourceLikes] = useState(0);
   const [userResourceLike, setUserResourceLike] = useState(false);
+  const [commentFilter, setCommentFilter] = useState("latest");
 
   const fetchResource = useCallback(async () => {
     try {
@@ -101,6 +102,11 @@ function SoloResource() {
   }, [comments, fetchLikes]);
 
   const handleAddComment = async () => {
+    if (newComment.trim() === "") {
+      toast.error("Comment cannot be empty.");
+      return;
+    }
+
     try {
       const createdCommentResponse = await axios.post(
         `http://localhost:8000/comments/`,
@@ -118,6 +124,13 @@ function SoloResource() {
 
       setComments([...comments, createdComment]);
       setNewComment("");
+
+      // Update the users state to include the current user's data
+      setUsers((prevUsers) => ({
+        ...prevUsers,
+        [user.id]: user,
+      }));
+
       toast.success("Comment added successfully!");
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -137,6 +150,11 @@ function SoloResource() {
   };
 
   const handleEditComment = async (commentId) => {
+    if (editingCommentText.trim() === "") {
+      toast.error("Comment cannot be empty.");
+      return;
+    }
+
     try {
       const response = await axios.put(
         `http://localhost:8000/comments/${commentId}`,
@@ -158,6 +176,11 @@ function SoloResource() {
       console.error("Error editing comment:", error);
       toast.error("Failed to edit comment.");
     }
+  };
+
+  const handleEditButtonClick = (commentId, commentText) => {
+    setEditingCommentId(commentId);
+    setEditingCommentText(commentText);
   };
 
   const handleLikeComment = async (commentId) => {
@@ -214,6 +237,22 @@ function SoloResource() {
     return likes[commentId] || 0;
   };
 
+  const filteredSortedComments = useMemo(() => {
+    const sortedComments = [...comments];
+    if (commentFilter === "latest") {
+      sortedComments.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+    } else if (commentFilter === "oldest") {
+      sortedComments.sort(
+        (a, b) => new Date(a.created_at) - new Date(b.created_at)
+      );
+    } else if (commentFilter === "mostLiked") {
+      sortedComments.sort((a, b) => (likes[b.id] || 0) - (likes[a.id] || 0));
+    }
+    return sortedComments;
+  }, [comments, commentFilter, likes]);
+
   if (!resource) {
     return <div>Loading...</div>;
   }
@@ -227,8 +266,23 @@ function SoloResource() {
         <button onClick={handleLikeResource}>Like ({resourceLikes})</button>
       </div>
       <div className="comments-section">
-        <h3>Comments</h3>
-        {comments.map((comment) => (
+        <div className="resource-comments-header">
+          <h3>Comments</h3>
+          <div className="filter-container">
+            <h5>Sort by: </h5>
+            <select
+              name="commentSortBy"
+              className="filter-dropdown"
+              value={commentFilter}
+              onChange={(e) => setCommentFilter(e.target.value)}
+            >
+              <option value="latest">Latest</option>
+              <option value="oldest">Oldest</option>
+              <option value="mostLiked">Most Liked</option>
+            </select>
+          </div>
+        </div>
+        {filteredSortedComments.map((comment) => (
           <div key={comment.id} className="comment-card">
             <p>
               <strong>{users[comment.user_id]?.username}</strong> -{" "}
@@ -241,7 +295,11 @@ function SoloResource() {
               </button>
               {user.id === comment.user_id && (
                 <>
-                  <button onClick={() => setEditingCommentId(comment.id)}>
+                  <button
+                    onClick={() =>
+                      handleEditButtonClick(comment.id, comment.comment)
+                    }
+                  >
                     Edit
                   </button>
                   <button onClick={() => handleDeleteComment(comment.id)}>
