@@ -78,13 +78,12 @@
   -webkit-backdrop-filter: blur(8px); /* For Safari */
   border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
   color: #fff;
-  animation: fadeInScale 0.5s ease-in-out;
 }
 
 .search-input-challenges:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .list-container-challenges {
@@ -105,12 +104,6 @@
   color: #fff;
   animation: fadeInScale 0.5s ease-in-out;
   transition: box-shadow 0.3s ease, border 0.3s ease;
-}
-
-.list-container-challenges:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
 }
 
 @keyframes fadeInScale {
@@ -153,7 +146,7 @@
 .list-item-challenges:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .list-item-challenges span {
@@ -194,9 +187,33 @@
 .pagination-controls {
   display: flex;
   justify-content: center;
-  height: 45px;
   gap: 10px;
   margin-top: 10px;
+}
+
+.pagination-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  transition: box-shadow 0.3s ease, border 0.3s ease;
+}
+
+.pagination-button:disabled {
+  background-color: rgba(45, 45, 45, 0.2);
+  cursor: not-allowed;
+}
+
+.pagination-button:hover:not(:disabled) {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .button-container-challenges {
@@ -222,7 +239,7 @@
 .button-challenges:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .solo-button {
@@ -254,6 +271,7 @@
   background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
   color: #fff;
   font-size: 1rem;
+  border: none;
   border-radius: 5px;
   cursor: pointer;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
@@ -261,42 +279,25 @@
   -webkit-backdrop-filter: blur(8px); /* For Safari */
   border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
   transition: background-color 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
-  animation: fadeInScale 0.5s ease-in-out;
 }
 
 .button-add:hover {
   background-color: #218838;
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 /*Modal*/
-.modal-content {
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  color: #fff;
-}
-
-.modal-header,
-.modal-footer {
-  border: none;
-}
-
 .modal-body form {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  color: #fff;
 }
 
 .modal-body form .form-label {
   font-weight: 600;
-  color: #fff;
+  color: #333;
   margin-bottom: 5px;
 }
 
@@ -305,8 +306,6 @@
   border-radius: 5px;
   border: 1px solid #ddd;
   transition: border-color 0.3s ease;
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  color: #fff;
 }
 
 .modal-body form .form-control:focus {
@@ -327,8 +326,6 @@
 
 .modal-footer .btn-primary:hover {
   background-color: #0056b3;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .modal-footer .btn-secondary {
@@ -339,15 +336,12 @@
 
 .modal-footer .btn-secondary:hover {
   background-color: #5a6268;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .filter-container {
   display: flex;
   align-items: center;
   gap: 10px;
-  animation: fadeInScale 0.5s ease-in-out;
 }
 
 .filter-dropdown {
@@ -365,7 +359,7 @@
 .filter-dropdown:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .filter-dropdown option {

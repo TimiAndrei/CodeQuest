@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import "./landingPage.css";
 import { getChallengesWithPagination } from "../../api/challenges";
 import { getResourcesWithPagination } from "../../api/resources";
@@ -9,7 +8,6 @@ function LandingPage() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,14 +37,6 @@ function LandingPage() {
       setActiveTab(tab);
       setPage(0);
       setData([]);
-    }
-  };
-
-  const handleItemClick = (id) => {
-    if (activeTab === "challenges") {
-      navigate(`/soloChallenge/${id}`);
-    } else {
-      navigate(`/resource/${id}`);
     }
   };
 
@@ -91,11 +81,7 @@ function LandingPage() {
             <div className="content-list">
               <ul className="list-landing">
                 {data.map((item) => (
-                  <li
-                    key={item.id}
-                    className="list-item-landing"
-                    onClick={() => handleItemClick(item.id)}
-                  >
+                  <li key={item.id} className="list-item-landing">
                     <span>{item.title}</span>
                   </li>
                 ))}

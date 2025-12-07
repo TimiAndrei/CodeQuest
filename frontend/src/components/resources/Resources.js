@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  getAllResources,
   addResources,
+  getResourcesWithPagination,
   deleteResource,
 } from "../../api/resources";
-
 import { useAuth } from "../authentification/AuthContext";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
@@ -15,68 +14,64 @@ import "react-toastify/dist/ReactToastify.css";
 import "./resources.css";
 
 function Resources() {
-  const [allResources, setAllResources] = useState([]);
+  const [resources, setResources] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState({
-    sortBy: "latest",
-  });
+  const [filteredResources, setFilteredResources] = useState([]);
   const [page, setPage] = useState(0);
-  const resourcesPerPage = 5;
-  const [showModal, setShowModal] = useState(false);
+  const [isLastPage, setIsLastPage] = useState(false);
+  const navigate = useNavigate();
   const [newResource, setNewResource] = useState({
     title: "",
     description: "",
   });
-
-  const [isLastPage, setIsLastPage] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const { user } = useAuth();
-  const navigate = useNavigate();
+
+  const fetchResources = async () => {
+    try {
+      const data = await getResourcesWithPagination(page * 5, 5);
+
+      const filledData = [...data];
+      while (filledData.length < 5) {
+        filledData.push({
+          id: `placeholder-${filledData.length}`,
+          title: "",
+          description: "",
+          isPlaceholder: true,
+        });
+      }
+
+      setResources(filledData);
+      setIsLastPage(data.length < 5);
+    } catch (error) {
+      console.error("Error fetching resources:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchAllResources = async () => {
-      try {
-        const data = await getAllResources();
-        setAllResources(data);
-      } catch (error) {
-        console.error("Error fetching resources:", error);
-      }
-    };
-    fetchAllResources();
-  }, []);
-
-  const filteredSortedResources = useMemo(() => {
-    const filtered = allResources.filter((resource) => {
-      const lowerTitle = resource.title.toLowerCase();
-      const lowerDesc = resource.description.toLowerCase();
-      const lowerSearch = searchTerm.toLowerCase();
-
-      return lowerTitle.includes(lowerSearch) || lowerDesc.includes(lowerSearch);
-    });
-    return filtered.sort((a, b) => {
-      if (filter.sortBy === "latest") {
-        return b.id - a.id;
-      } else {
-        return a.id - b.id;
-      }
-    });
-  }, [allResources, searchTerm, filter]);
-
-  const startIndex = page * resourcesPerPage;
-  const endIndex = startIndex + resourcesPerPage;
-  const currentPageResources = filteredSortedResources.slice(startIndex, endIndex);
+    fetchResources();
+  }, [page]);
 
   useEffect(() => {
-    setIsLastPage(endIndex >= filteredSortedResources.length);
-  }, [endIndex, filteredSortedResources]);
+    const filtered = resources.filter(
+      (resource) =>
+        resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resource.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredResources(filtered);
+  }, [searchTerm, resources]);
 
-  const handleItemClick = (id) => {
+  const handleExploreClick = (id) => {
     navigate(`/resource/${id}`);
   };
 
   const handleDeleteResource = async (id) => {
     try {
       await deleteResource(id);
-      setAllResources((prev) => prev.filter((r) => r.id !== id));
+      setResources(resources.filter((resource) => resource.id !== id));
+      setFilteredResources(
+        filteredResources.filter((resource) => resource.id !== id)
+      );
       toast.success("Resource deleted successfully!");
     } catch (error) {
       console.error("Error deleting resource:", error);
@@ -94,33 +89,22 @@ function Resources() {
       await addResources(resourceToSubmit);
       toast.success("Resource added successfully!");
       setShowModal(false);
-      setNewResource({ title: "", description: "" });
+      setNewResource({
+        title: "",
+        description: "",
+      });
       setPage(0);
-
-      const updated = await getAllResources();
-      setAllResources(updated);
+      fetchResources(); // Reload resources to display the new resource
     } catch (error) {
       console.error("Error adding resources:", error);
       toast.error("Failed to add resource.");
     }
   };
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilter((prevFilter) => ({ ...prevFilter, [name]: value }));
-    setPage(0);
-  };
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    setPage(0);
-  };
-
   return (
     <div className="resources-container">
       <div className="grid-layout-resources">
         <div className="grid-item-resources invisible-resources"></div>
-
         <div className="grid-item-resources middle-resources">
           <div className="main-container-resources">
             <div className="search-bar-resources">
@@ -129,45 +113,41 @@ function Resources() {
                 placeholder="Search for resources..."
                 className="search-input-resources"
                 value={searchTerm}
-                onChange={handleSearch}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <div className="filter-container">
-                <select
-                  name="sortBy"
-                  className="filter-dropdown"
-                  value={filter.sortBy}
-                  onChange={handleFilterChange}
-                >
-                  <option value="latest">Latest</option>
-                  <option value="oldest">Oldest</option>
-                </select>
-              </div>
             </div>
 
             <div className="list-container-resources">
               <ul className="list-resources">
-                {currentPageResources.map((resource) => (
+                {filteredResources.map((resource) => (
                   <li
                     key={resource.id}
-                    className="list-item-resources"
-                    onClick={() => handleItemClick(resource.id)}
+                    className={`list-item-resources ${
+                      resource.isPlaceholder ? "placeholder" : ""
+                    }`}
                   >
-                    <span className="resource-title">{resource.title}</span>
-                    {user && user.role === "admin" && (
-                      <button
-                        className="button-resources delete-button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteResource(resource.id);
-                        }}
-                      >
-                        Delete
-                      </button>
+                    <span>{resource.title}</span>
+                    {!resource.isPlaceholder && (
+                      <div className="button-container-resources">
+                        <button
+                          className="button-resources explore-button"
+                          onClick={() => handleExploreClick(resource.id)}
+                        >
+                          Explore
+                        </button>
+                        {user && user.role === "admin" && (
+                          <button
+                            className="button-resources delete-button"
+                            onClick={() => handleDeleteResource(resource.id)}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     )}
                   </li>
                 ))}
               </ul>
-
               <div className="pagination-controls">
                 <button
                   className="pagination-button"
@@ -185,20 +165,20 @@ function Resources() {
                 </button>
               </div>
             </div>
-
             {user && (user.role === "admin" || user.role === "expert") && (
               <div>
-                <button onClick={() => setShowModal(true)} className="button-add">
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="button-add"
+                >
                   Add Resource
                 </button>
               </div>
             )}
           </div>
         </div>
-
         <div className="grid-item-resources invisible-resources"></div>
       </div>
-
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Add New Resource</Modal.Title>
@@ -212,10 +192,11 @@ function Resources() {
                 placeholder="Enter title"
                 value={newResource.title}
                 onChange={(e) =>
-                  setNewResource((prev) => ({ ...prev, title: e.target.value }))
+                  setNewResource({ ...newResource, title: e.target.value })
                 }
               />
             </Form.Group>
+
             <Form.Group>
               <Form.Label>Description</Form.Label>
               <Form.Control
@@ -223,10 +204,10 @@ function Resources() {
                 placeholder="Enter description"
                 value={newResource.description}
                 onChange={(e) =>
-                  setNewResource((prev) => ({
-                    ...prev,
+                  setNewResource({
+                    ...newResource,
                     description: e.target.value,
-                  }))
+                  })
                 }
               />
             </Form.Group>
@@ -241,7 +222,6 @@ function Resources() {
           </Button>
         </Modal.Footer>
       </Modal>
-
       <ToastContainer />
     </div>
   );
