@@ -1,157 +1,73 @@
-.user-page-container,
-.loading-container {
+.user-page-container {
   display: flex;
-  min-height: 90vh;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(
-    -45deg,
-    #1a1a1a,
-    #333333,
-    #0d1b2a,
-    #1b263b
-  ); /* Darker gradient */
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
+  margin-top: 5%;
+  background-color: #f8f9fa;
   padding: 20px;
-  width: 100%;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  color: #fff;
+  margin-left: 10%;
+  width: 80%;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes gradientBG {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.user-page-grid {
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-  width: 100%;
-  max-height: 500px;
-  margin-bottom: 20px;
-}
-
-.user-profile-card,
-.friends-section,
-.search-section,
-.admin-section {
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
+.user-profile-card {
+  background-color: #fff;
   padding: 20px;
+  border-radius: 8px;
   width: 100%;
+  max-width: 500px;
   text-align: center;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  color: #fff;
-  animation: fadeInScale 0.5s ease-in-out;
-  transition: box-shadow 0.3s ease, border 0.3s ease;
-  overflow: auto;
-  max-height: 500px;
-}
-.admin-section {
-  width: 40%;
-}
-
-.user-profile-card:hover,
-.friends-section:hover,
-.search-section:hover,
-.admin-section:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
-}
-
-@keyframes fadeInScale {
-  0% {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.user-profile-card h2,
-.admin-section h3 {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
-  color: #fff;
+}
+
+.user-profile-card h2 {
+  margin-bottom: 20px;
+  color: #333;
 }
 
 .user-profile-details p {
   font-size: 1rem;
   margin: 10px 0;
-  color: #fff;
+  color: #555;
 }
 
 .user-edit-form label {
   display: block;
   margin: 10px 0;
   text-align: left;
-  color: #fff;
+  color: #333;
 }
 
-.user-edit-form input,
-.search-section input,
-.admin-search-bar input {
+.user-edit-form input {
   width: 100%;
   padding: 10px;
-  margin-left: 0px;
-  border-radius: 5px;
+  margin-top: 5px;
   border: 1px solid #ccc;
-  font-size: 1rem;
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  color: #fff;
-  animation: fadeInScale 0.5s ease-in-out;
+  border-radius: 5px;
 }
 
-.admin-search-bar input {
-  margin-bottom: 20px;
-}
-
-.user-actions,
-.admin-search-bar {
+.user-actions {
+  margin-top: 20px;
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-top: 20px;
 }
 
+.edit-button,
 .save-button,
-.cancel-button,
-.search-results button,
-.button-edit,
-.button-save,
-.button-cancel {
-  padding: 5px 10px;
+.cancel-button {
+  padding: 10px 15px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 1rem;
   color: #fff;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  transition: box-shadow 0.3s ease, border 0.3s ease;
-  text-decoration: none; /* Remove underline */
+}
+
+.edit-button {
+  background-color: #007bff;
 }
 
 .save-button {
@@ -162,8 +78,35 @@
   background-color: #dc3545;
 }
 
+.friends-section,
+.search-section {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.search-section input {
+  width: calc(100% - 110px);
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
 .search-section button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #fff;
   background-color: #007bff;
+  margin-left: 10px;
 }
 
 .search-results ul {
@@ -171,41 +114,52 @@
   padding: 0;
 }
 
-.search-results li,
-.friends-section li {
+.search-results li {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  margin-bottom: 10px;
-  margin-top: 10px;
-  min-height: 60px;
+  border-bottom: 1px solid #ddd;
 }
 
-.search-results li:hover,
-.friends-section li:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
-}
-.search-results button,
-.button-edit,
-.button-save {
+.search-results button {
   padding: 5px 10px;
-  /* font-size: 0.9rem; */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #fff;
   background-color: #28a745;
 }
 
-.search-results button:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: #218838;
+.admin-section {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.admin-section h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.admin-search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.admin-search-bar input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
 }
 
 .admin-table {
@@ -215,72 +169,28 @@
 
 .admin-table th,
 .admin-table td {
-  padding: 5px;
+  padding: 10px;
   border: 1px solid #ddd;
-  text-align: center; /* Center text horizontally */
-  vertical-align: middle; /* Center text vertically */
+  text-align: left;
 }
 
-.promote-button,
-.demote-button {
-  padding: 5px 10px;
+.admin-table th {
+  background-color: #f1f1f1;
+}
+
+.button-role-change {
+  padding: 10px 15px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  text-decoration: none;
   color: #fff;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  transition: box-shadow 0.3s ease, border 0.3s ease;
-  text-decoration: none; /* Remove underline */
+  text-align: center;
+  background-color: #007bff;
+  width: 130px; /* Ensure all buttons have the same width */
 }
 
-.promote-button:hover,
-.demote-button:hover,
-.button-edit:hover,
-.button-save:hover,
-.button-cancel:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.promote-button,
-.button-edit,
-.button-save {
-  background-color: #28a745;
-}
-
-.promote-button:hover,
-.button-edit:hover,
-.button-save:hover {
-  background-color: #218838;
-}
-
-.demote-button,
-.button-cancel {
-  background-color: #dc3545;
-}
-
-.demote-button:hover,
-.button-cancel:hover {
-  background-color: #c82333;
-}
-
-@media (max-width: 1400px) {
-  .user-profile-card,
-  .friends-section,
-  .search-section,
-  .admin-section {
-    min-width: 500px;
-  }
-}
-
-@media (max-width: 1000px) {
-  .user-page-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 10px;
-  }
+.button-role-change + .button-role-change {
+  margin-left: 10px;
 }

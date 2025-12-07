@@ -1,142 +1,94 @@
 .inbox-container {
+  margin-top: 5%;
   width: 100%;
-  min-height: 90vh;
-  background: linear-gradient(
-    -45deg,
-    #1a1a1a,
-    #333333,
-    #0d1b2a,
-    #1b263b
-  ); /* Darker gradient */
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
+  background-color: #555;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-@keyframes gradientBG {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
 .grid-layout-inbox {
   display: grid;
   grid-template-columns: 20% 60% 20%;
   width: 100%;
-  height: 100%;
+  height: auto;
+  background-color: #555;
 }
 
 .grid-item-inbox {
+  padding: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .grid-item-inbox.middle-inbox {
-  color: #fff;
+  background-color: #555;
+  color: #555;
 }
 
 .grid-item-inbox.invisible-inbox {
-  background-color: transparent;
+  background-color: #555;
 }
 
 .card-inbox {
   width: 100%;
-  min-width: 800px; /* Ensure consistent width */
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
   min-height: 500px;
-  color: #fff;
-  animation: fadeInScale 0.5s ease-in-out;
-  transition: box-shadow 0.3s ease, border 0.3s ease;
+  min-width: 600px;
 }
 
-.card-inbox:hover {
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+.card-text-inbox {
+  text-align: center;
 }
 
-@keyframes fadeInScale {
-  0% {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+.inner-card-inbox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
 .notifications-list {
-  list-style: none;
+  list-style-type: none;
   padding: 0;
-  margin: 0;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  width: 100%; /* Ensure consistent width */
+  width: 100%;
 }
 
 .notification-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: #f8f9fa;
   padding: 10px;
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  border-radius: 5px;
   margin-bottom: 10px;
-  min-height: 60px;
-  min-width: 700px;
-}
-
-.notification-item:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .notification-item span {
   flex: 1;
+  text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.notification-message {
-  float: left;
-  margin-left: 0;
-}
-
 .button-container-inbox {
-  flex: 2;
   display: flex;
-  justify-content: flex-end;
-  max-width: 100px;
-  gap: 5px;
+  margin-left: 10px;
+  gap: 10px;
 }
 
 .button-inbox {
@@ -145,34 +97,17 @@
   border-radius: 5px;
   cursor: pointer;
   font-size: 0.9rem;
-  background-color: #86bc25;
+  text-decoration: none;
   color: #fff;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  transition: box-shadow 0.3s ease, border 0.3s ease;
-  text-decoration: none; /* Remove underline */
-}
-
-.button-inbox:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: #76a520;
+  text-align: center;
 }
 
 .accept-button {
   background-color: #86bc25;
-  text-decoration: none; /* Remove underline */
-  margin-right: 4px;
 }
 
 .reject-button {
   background-color: #dc3545;
-}
-
-.reject-button:hover {
-  background-color: #c82333;
 }
 
 @media (max-width: 1400px) {

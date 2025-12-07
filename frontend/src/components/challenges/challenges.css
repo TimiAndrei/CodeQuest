@@ -84,7 +84,7 @@
 .search-input-challenges:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .list-container-challenges {
@@ -110,7 +110,7 @@
 .list-container-challenges:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 @keyframes fadeInScale {
@@ -153,7 +153,7 @@
 .list-item-challenges:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .list-item-challenges span {
@@ -222,7 +222,7 @@
 .button-challenges:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .solo-button {
@@ -268,7 +268,7 @@
   background-color: #218838;
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 /*Modal*/
@@ -365,7 +365,7 @@
 .filter-dropdown:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .filter-dropdown option {

@@ -10,9 +10,9 @@ export const getUsers = async () => {
   }
 };
 
-export const getAllUsersOrderedByPoints = async () => {
+export const getUsersOrderedByPoints = async (skip = 0, limit = 5) => {
   try {
-    const response = await api.get("/usersOrderedByPoints/?skip=0&limit=99999");
+    const response = await api.get(`/usersOrderedByPoints/?skip=${skip}&limit=${limit}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching users ordered by points:", error);

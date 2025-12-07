@@ -1,11 +1,11 @@
 import api from "./apiInstance";
 
-export const getAllResources = async () => {
+export const getResources = async () => {
   try {
-    const response = await api.get("/resources?skip=0&limit=9999");
+    const response = await api.get("/resources/");
     return response.data;
   } catch (error) {
-    console.error("Error fetching all resources:", error);
+    console.error("Error fetching resources:", error);
     throw error;
   }
 };

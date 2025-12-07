@@ -71,7 +71,7 @@
 .card-landing:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 @keyframes fadeInScale {
@@ -134,7 +134,7 @@
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 .list-item-placeholder {
@@ -175,7 +175,7 @@
 .pagination-button:hover:not(:disabled) {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
 }
 
 @media (max-width: 1400px) {

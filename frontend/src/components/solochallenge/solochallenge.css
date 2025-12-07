@@ -1,35 +1,17 @@
 .solo-challenge-container {
+  margin-top: 3%;
   width: 100%;
-  min-height: 90vh;
-  background: linear-gradient(
-    -45deg,
-    #1a1a1a,
-    #333333,
-    #0d1b2a,
-    #1b263b
-  ); /* Darker gradient */
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-@keyframes gradientBG {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  background-color: #555;
+  margin-bottom: 3%;
 }
 
 .grid-layout-solo {
   display: grid;
-  grid-template-columns: 45% 55%;
+  grid-template-columns: 40% 60%;
   width: 100%;
   height: 100%;
   gap: 20px;
@@ -37,17 +19,15 @@
 
 .grid-item-solo {
   padding: 20px;
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  animation: fadeInScale 0.5s ease-in-out;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .grid-item-solo.left-solo {
-  background-color: rgba(45, 45, 45, 0.5);
+  background-color: #f8f9fa;
+  /* max-width: 600px;
+  max-height: 700px; */
   margin-left: 5%;
   display: flex;
   justify-content: center;
@@ -58,7 +38,9 @@
 }
 
 .grid-item-solo.right-solo {
-  background-color: rgba(45, 45, 45, 0.5);
+  background-color: #e9ecef;
+  /* max-width: 900px;
+  max-height: 700px; */
   margin-right: 5%;
   display: flex;
   justify-content: center;
@@ -72,13 +54,10 @@
   width: 90%;
   max-width: 100%;
   max-height: 500px;
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
+  background: #fff;
+  border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -90,36 +69,12 @@
   margin: 0;
   font-size: 1.5rem;
   text-align: center;
-  color: #fff;
 }
 
 .card-solo p {
   font-size: 1rem;
-  color: #fff;
+  color: #333;
   white-space: pre-wrap;
-}
-/* Custom scrollbar styling */
-.card-solo::-webkit-scrollbar {
-  width: 12px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-.card-solo::-webkit-scrollbar-track {
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  border-radius: 16px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-.card-solo::-webkit-scrollbar-thumb {
-  background-color: #0056b3; /* Dark blue color */
-  border-radius: 16px;
-  border: 3px solid rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-}
-
-.card-solo::-webkit-scrollbar-thumb:hover {
-  background-color: #004494; /* Darker blue on hover */
 }
 
 .language-display {
@@ -128,7 +83,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #fff;
 }
 
 .language-display i {
@@ -143,64 +97,48 @@
 }
 
 .timer-button {
-  padding: 10px 15px;
+  padding: 8px 16px;
+  font-size: 1rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 0.9rem;
-  background-color: #86bc25;
-  color: #fff;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  transition: box-shadow 0.3s ease, border 0.3s ease;
-}
-
-.timer-button:hover {
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background-color: #0056b3;
 }
 
 .timer-button.start {
   background-color: #007bff;
+  width: 100px;
+  color: white;
 }
 
 .timer-button.pause {
   background-color: #ff6347;
+  width: 100px;
+  color: white;
 }
 
 .submit-button {
-  padding: 10px 15px;
+  padding: 8px 16px;
+  font-size: 1rem;
   border: none;
   border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
   background-color: #28a745;
-  color: #fff;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
-  -webkit-backdrop-filter: blur(8px); /* For Safari */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
-  transition: box-shadow 0.3s ease, border 0.3s ease;
+  color: white;
+  cursor: pointer;
 }
 
 .submit-button:hover {
   background-color: #218838;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .timer-time {
   font-size: 1.2rem;
   font-weight: bold;
   margin: 0;
-  color: #fff;
 }
 
 textarea {
   width: 100%;
+  /* max-width: 750px; */
   max-height: 350px;
   padding: 10px;
   border-radius: 8px;
@@ -208,15 +146,9 @@ textarea {
   font-size: 0.9rem;
   font-family: monospace;
   resize: none;
-  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
-  color: #fff;
 }
 
 .textarea-disabled {
-  background-color: #847676;
+  background-color: #f0f0f0;
   cursor: not-allowed;
-}
-
-.recommended-resources {
-  color: #fff;
 }
