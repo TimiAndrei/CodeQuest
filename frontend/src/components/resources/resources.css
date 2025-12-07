@@ -221,8 +221,13 @@
   background-color: #76a520;
 }
 
-.delete-button {
-  background-color: #dc3545;
+.buy-button-modal {
+  border: 1px solid transparent;
+  background-color: #76a520;
+}
+
+.buy-button-modal:hover {
+  background-color: #5c8a1d;
 }
 
 .delete-button:hover {

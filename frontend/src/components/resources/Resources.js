@@ -191,6 +191,10 @@ function Resources() {
                   Next
                 </button>
               </div>
+
+              <div className="pagination-info">
+                Page {page + 1} of {totalPages || 1}
+              </div>
             </div>
             {user && (user.role === "admin" || user.role === "expert") && (
               <div>

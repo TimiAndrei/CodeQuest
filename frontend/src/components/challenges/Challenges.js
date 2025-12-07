@@ -107,6 +107,54 @@ function Challenges() {
     }
   }, [user]);
 
+  const filteredSortedChallenges = useMemo(() => {
+    let filtered = [...allChallenges];
+
+    const lowerSearch = searchTerm.toLowerCase();
+    if (lowerSearch) {
+      filtered = filtered.filter((challenge) => {
+        const inTitle = challenge.title.toLowerCase().includes(lowerSearch);
+        const inDiff = challenge.difficulty.toLowerCase().includes(lowerSearch);
+        const inLang = challenge.language.toLowerCase().includes(lowerSearch);
+        return inTitle || inDiff || inLang;
+      });
+    }
+
+    if (filter.language) {
+      filtered = filtered.filter(
+        (ch) => ch.language.toLowerCase() === filter.language.toLowerCase()
+      );
+    }
+
+    if (filter.difficulty) {
+      filtered = filtered.filter(
+        (ch) => ch.difficulty.toLowerCase() === filter.difficulty.toLowerCase()
+      );
+    }
+
+    if (filter.sortBy === "latest") {
+      filtered.sort((a, b) => b.id - a.id);
+    } else {
+      filtered.sort((a, b) => a.id - b.id);
+    }
+
+    return filtered;
+  }, [allChallenges, searchTerm, filter]);
+
+  const startIndex = page * challengesPerPage;
+  const endIndex = startIndex + challengesPerPage;
+  const currentPageChallenges = filteredSortedChallenges.slice(
+    startIndex,
+    endIndex
+  );
+  const totalPages = Math.ceil(
+    filteredSortedChallenges.length / challengesPerPage
+  );
+
+  useEffect(() => {
+    setIsLastPage(endIndex >= filteredSortedChallenges.length);
+  }, [endIndex, filteredSortedChallenges]);
+
   const handleAddChallenge = async () => {
     const challengeToSubmit = {
       title: newChallenge.title,
@@ -150,6 +198,20 @@ function Challenges() {
       toast.error("Failed to delete challenge.");
     }
   };
+
+  const openFriendsModal = (challengeId) => {
+    setCurrentChallengeId(challengeId);
+    setShowFriendsModal(true);
+  };
+
+  const handleFriendToggle = (friendUsername) => {
+    setSelectedFriends((prev) =>
+      prev.includes(friendUsername)
+        ? prev.filter((u) => u !== friendUsername)
+        : [...prev, friendUsername]
+    );
+  };
+
 
   const handleChallengeFriend = async () => {
     if (selectedFriends.length === 0) {
@@ -242,6 +304,13 @@ function Challenges() {
                   onChange={handleFilterChange}
                 >
                   <option value="">All Languages</option>
+                  {Array.from(
+                    new Set(allChallenges.map((c) => c.language))
+                  ).map((lang) => (
+                    <option key={lang} value={lang}>
+                      {lang}
+                    </option>
+                  ))}
                   {/* Add options dynamically based on available languages */}
                   {Array.from(new Set(challenges.map((c) => c.language))).map(
                     (language) => (
@@ -275,6 +344,9 @@ function Challenges() {
                     <div className="button-container-challenges">
                       <button
                         className="button-challenges solo-button"
+                        onClick={() =>
+                          navigate(`/soloChallenge/${challenge.id}`)
+                        }
                         onClick={() =>
                           navigate(`/soloChallenge/${challenge.id}`)
                         }
@@ -315,10 +387,17 @@ function Challenges() {
                   Next
                 </button>
               </div>
+              <div className="pagination-info">
+                Page {page + 1} of {totalPages || 1}
+              </div>
             </div>
 
             {user && (user.role === "admin" || user.role === "expert") && (
               <div>
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="button-add"
+                >
                 <button
                   onClick={() => setShowModal(true)}
                   className="button-add"
@@ -345,6 +424,10 @@ function Challenges() {
                 placeholder="Enter title"
                 value={newChallenge.title}
                 onChange={(e) =>
+                  setNewChallenge((prev) => ({
+                    ...prev,
+                    title: e.target.value,
+                  }))
                   setNewChallenge({ ...newChallenge, title: e.target.value })
                 }
               />
@@ -372,6 +455,10 @@ function Challenges() {
                 placeholder="Enter input"
                 value={newChallenge.input}
                 onChange={(e) =>
+                  setNewChallenge((prev) => ({
+                    ...prev,
+                    input: e.target.value,
+                  }))
                   setNewChallenge({ ...newChallenge, input: e.target.value })
                 }
               />
@@ -384,6 +471,10 @@ function Challenges() {
                 placeholder="Enter output"
                 value={newChallenge.output}
                 onChange={(e) =>
+                  setNewChallenge((prev) => ({
+                    ...prev,
+                    output: e.target.value,
+                  }))
                   setNewChallenge({ ...newChallenge, output: e.target.value })
                 }
               />
@@ -454,6 +545,10 @@ function Challenges() {
           </List>
         </Modal.Body>
         <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowFriendsModal(false)}
+          >
           <Button
             variant="secondary"
             onClick={() => setShowFriendsModal(false)}
