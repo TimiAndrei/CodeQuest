@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 
 
 class UserCreate(BaseModel):
@@ -72,6 +72,7 @@ class ChallengeCreate(BaseModel):
     output: str
     difficulty: str
     language: str
+    tags: List[int]
 
 
 class ChallengeRead(BaseModel):
@@ -82,6 +83,7 @@ class ChallengeRead(BaseModel):
     output: str
     difficulty: str
     language: str
+    tags: List[int]
 
     class Config:
         from_attributes = True
