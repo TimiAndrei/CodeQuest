@@ -2,8 +2,9 @@
   margin-top: 5%;
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  gap: 20px;
 }
 
 .soloresource-card {
@@ -24,4 +25,91 @@
   font-size: 1.2rem;
   color: #555;
   white-space: pre-wrap;
+}
+
+.comments-section {
+  width: 70%;
+  min-width: 600px;
+  background: rgba(45, 45, 45, 0.5); /* Darker gray with transparency */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: #fff;
+  animation: fadeInScale 0.5s ease-in-out;
+}
+
+.comment-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px); /* Reduced blur for less prominence */
+  -webkit-backdrop-filter: blur(8px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeInScale 0.5s ease-in-out;
+}
+
+.comment-card:hover {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
+}
+
+.comment-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-comment textarea,
+.edit-comment textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: rgba(45, 45, 45, 0.5);
+  color: #fff;
+}
+
+button {
+  align-self: flex-end;
+  padding: 5px 15px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.delete-button {
+  background-color: #dc3545;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+}
+
+.edit-comment-buttons {
+  display: flex;
+  gap: 10px;
 }

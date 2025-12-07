@@ -94,6 +94,7 @@
   align-items: center;
   gap: 15px;
   margin-bottom: 15px;
+  margin-top: -15px;
 }
 
 .timer-button {
