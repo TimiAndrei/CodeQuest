@@ -94,10 +94,15 @@ function UsersPage() {
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (query) => {
+    if (!query) {
+      setSearchResults([]);
+      return;
+    }
+
     try {
       const response = await axios.get(`http://localhost:8000/users/search`, {
-        params: { query: searchTerm },
+        params: { query },
       });
       setSearchResults(response.data);
     } catch (err) {
@@ -126,9 +131,19 @@ function UsersPage() {
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
+  const handleDeleteFriend = async (friendId) => {
+    try {
+      await axios.delete(`http://localhost:8000/users/${user.id}/friends`, {
+        params: { friend_username: friendId },
+      });
+      const response = await axios.get(
+        `http://localhost:8000/users/${user.id}/friends`
+      );
+      setFriends(response.data);
+      toast.success("Friend deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting friend:", err);
+      toast.error("Failed to delete friend.");
     }
   };
 
@@ -152,75 +167,24 @@ function UsersPage() {
       u.id !== user.id
   );
 
+  useEffect(() => {
+    const debounceSearch = setTimeout(() => {
+      handleSearch(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(debounceSearch);
+  }, [searchTerm]);
+
   if (loading) {
-    return <div>Loading user profile...</div>;
+    return <div className="loading-container"></div>;
   }
 
   if (error) {
     return <div>{error}</div>;
   }
-
   return (
     <div className="user-page-container">
       <ToastContainer />
-      <div className="user-profile-card">
-        <h2>User Profile</h2>
-        {isEditing ? (
-          <div className="user-edit-form">
-            <label>
-              Username:
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-              />
-            </label>
-            <label>
-              Email:
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-            </label>
-            <div className="user-actions">
-              <button onClick={handleSave} className="button-save">
-                Save
-              </button>
-              <button onClick={handleEditToggle} className="button-cancel">
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="user-profile-details">
-            <p>
-              <strong>Username:</strong> {profile.username}
-            </p>
-            <p>
-              <strong>Role:</strong> {profile.role}
-            </p>
-            <p>
-              <strong>Email:</strong> {profile.email}
-            </p>
-            <div className="user-actions">
-              <button onClick={handleEditToggle} className="button-edit">
-                Edit
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="friends-section">
-        <h3>Friends</h3>
-        <ul>
-          {friends.map((friend) => (
-            <li key={friend.id}>{friend.username}</li>
-          ))}
-        </ul>
-      </div>
       <div className="search-section">
         <h3>Search Users</h3>
         <div className="search-bar">
@@ -228,23 +192,90 @@ function UsersPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={handleKeyDown}
             placeholder="Search by username"
           />
-          <button onClick={handleSearch} className="button-search">
-            Search
-          </button>
         </div>
         <div className="search-results">
           <ul>
+            {searchResults.length === 0 && searchTerm && (
+              <li>No user found with searched name</li>
+            )}
             {searchResults.map((result) => (
               <li key={result.id}>
-                {result.username}{" "}
+                {result.username}
                 <button
                   onClick={() => handleAddFriend(result.username)}
                   className="button-add-friend"
                 >
                   Add Friend
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="user-page-grid">
+        <div className="user-profile-card">
+          <h2>User Profile</h2>
+          {isEditing ? (
+            <div className="user-edit-form">
+              <label>
+                Username:
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                />
+              </label>
+              <label>
+                Email:
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                />
+              </label>
+              <div className="user-actions">
+                <button onClick={handleSave} className="button-save">
+                  Save
+                </button>
+                <button onClick={handleEditToggle} className="button-cancel">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="user-profile-details">
+              <p>
+                <strong>Username:</strong> {profile.username}
+              </p>
+              <p>
+                <strong>Role:</strong> {profile.role}
+              </p>
+              <p>
+                <strong>Email:</strong> {profile.email}
+              </p>
+              <div className="user-actions">
+                <button onClick={handleEditToggle} className="button-edit">
+                  Edit
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="friends-section">
+          <h3>Friends</h3>
+          <ul>
+            {friends.map((friend) => (
+              <li key={friend.id}>
+                {friend.username}
+                <button
+                  onClick={() => handleDeleteFriend(friend.username)}
+                  className="demote-button"
+                >
+                  Remove Friend
                 </button>
               </li>
             ))}
@@ -262,57 +293,52 @@ function UsersPage() {
               placeholder="Search by username"
             />
           </div>
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Role</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <div className="list-container-challenges">
+            <ul className="list-challenges">
               {filteredAdminUsers.map((u) => (
-                <tr key={u.id}>
-                  <td>{u.username}</td>
-                  <td>{u.role}</td>
-                  <td>
-                    {u.role === "user" && (
-                      <button
-                        onClick={() => handleRoleChange(u.id, "expert")}
-                        className="button-role-change"
-                      >
-                        Make Expert
-                      </button>
-                    )}
-                    {u.role === "expert" && (
-                      <>
+                <li key={u.id} className="list-item-challenges">
+                  <span>{u.username}</span>
+                  <span>{u.role}</span>
+                  <div className="button-container-challenges">
+                    <div className="promote-buttons">
+                      {u.role === "user" && (
+                        <button
+                          onClick={() => handleRoleChange(u.id, "expert")}
+                          className="promote-button"
+                        >
+                          Make Expert
+                        </button>
+                      )}
+                      {u.role === "expert" && (
                         <button
                           onClick={() => handleRoleChange(u.id, "admin")}
-                          className="button-role-change"
+                          className="promote-button"
                         >
                           Make Admin
                         </button>
+                      )}
+                    </div>
+                    <div className="demote-buttons">
+                      {
                         <button
-                          onClick={() => handleRoleChange(u.id, "user")}
-                          className="button-role-change"
+                          onClick={() =>
+                            handleRoleChange(
+                              u.id,
+                              u.role === "admin" ? "expert" : "user"
+                            )
+                          }
+                          className="demote-button"
+                          disabled={u.role === "user"}
                         >
                           Demote
                         </button>
-                      </>
-                    )}
-                    {u.role === "admin" && (
-                      <button
-                        onClick={() => handleRoleChange(u.id, "expert")}
-                        className="button-role-change"
-                      >
-                        Demote
-                      </button>
-                    )}
-                  </td>
-                </tr>
+                      }
+                    </div>
+                  </div>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          </div>
         </div>
       )}
     </div>

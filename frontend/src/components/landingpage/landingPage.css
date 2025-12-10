@@ -71,7 +71,7 @@
 .card-landing:hover {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
 }
 
 @keyframes fadeInScale {
@@ -134,7 +134,7 @@
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
 }
 
 .list-item-placeholder {
@@ -175,7 +175,7 @@
 .pagination-button:hover:not(:disabled) {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(45, 45, 45, 0.1); /* Slight shine effect */
+  background: rgba(45, 45, 45, 0.5); /* Slight shine effect */
 }
 
 @media (max-width: 1400px) {
@@ -206,4 +206,21 @@
   .grid-item-landing.invisible-landing {
     display: none;
   }
+}
+
+.landing-page-container .tab-button {
+  border-radius: 0px;
+  color: #000;
+}
+
+.landing-page-container .tab-button.active {
+  background-color: #0056b3;
+  color: white;
+}
+.landing-page-container .tab-button.active:hover {
+  background-color: #004494;
+}
+
+.landing-page-container .tab-button.inactive:hover {
+  background-color: #a7a6a6;
 }

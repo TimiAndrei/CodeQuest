@@ -26,7 +26,8 @@ export const submitCode = async (
   languageId,
   stdin,
   expectedOutput,
-  user_id
+  user_id,
+  time
 ) => {
   try {
     const response = await api.post("/submit-code", {
@@ -36,6 +37,7 @@ export const submitCode = async (
       stdin: stdin,
       expected_output: expectedOutput,
       user_id: user_id,
+      time: time,
     });
     return response.data;
   } catch (error) {
@@ -69,6 +71,19 @@ export const deleteChallenge = async (id) => {
     await api.delete(`/challenges/${id}`);
   } catch (error) {
     console.error("Error deleting challenge:", error);
+    throw error;
+  }
+};
+
+export const getAllChallenges = async (userId) => {
+  try {
+    const url = userId
+      ? `/challenges?skip=0&limit=99999&user_id=${userId}`
+      : `/challenges?skip=0&limit=99999`;
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all challenges:", error);
     throw error;
   }
 };

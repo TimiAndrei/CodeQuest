@@ -5,6 +5,9 @@ import axios from "axios";
 import { getChallenge, submitCode } from "../../api/challenges";
 import { useAuth } from "../authentification/AuthContext";
 import api from "../../api/apiInstance";
+import { Editor } from "@monaco-editor/react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function SoloChallenge() {
   const { id } = useParams();
@@ -24,6 +27,45 @@ function SoloChallenge() {
   const [editingCommentText, setEditingCommentText] = useState("");
   const [users, setUsers] = useState({});
   const [commentFilter, setCommentFilter] = useState("latest");
+
+  const [challengeLikes, setChallengeLikes] = useState(0);
+  const [userChallengeLike, setUserChallengeLike] = useState(false);
+
+  const fetchChallengeLikes = useCallback(async () => {
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8000/challenges/like/${id}`
+      );
+      setChallengeLikes(data.length);
+      setUserChallengeLike(data.some((like) => like.user_id === user.id));
+    } catch (error) {
+      console.error("Error fetching challenge likes:", error);
+    }
+  }, [id, user.id]);
+
+  const handleLikeChallenge = async () => {
+    try {
+      await axios.post(`http://localhost:8000/challenges/like`, {
+        user_id: user.id,
+        challenge_id: id,
+      });
+      setChallengeLikes((prevLikes) =>
+        userChallengeLike ? prevLikes - 1 : prevLikes + 1
+      );
+      setUserChallengeLike((prevUserLike) => !prevUserLike);
+      if (userChallengeLike) {
+        toast.success("Challenge unliked!");
+      } else {
+        toast.success("Challenge liked!");
+      }
+    } catch (error) {
+      console.error("Error liking/unliking challenge:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchChallengeLikes();
+  }, [fetchChallengeLikes]);
 
   const filteredSortedComments = useMemo(() => {
     const sortedComments = [...comments];
@@ -99,7 +141,8 @@ function SoloChallenge() {
         languageId,
         stdin,
         expectedOutput,
-        user.id // Pass the user ID
+        user.id,
+        time
       );
       console.log("API Response:", result);
 
@@ -319,11 +362,10 @@ function SoloChallenge() {
 
   const handleLikeComment = async (commentId) => {
     try {
-      const response = await axios.post(`http://localhost:8000/comments/like`, {
+      await axios.post(`http://localhost:8000/comments/like`, {
         user_id: user.id,
         comment_id: commentId,
       });
-      const liked = response.data;
       setLikes((prevLikes) => ({
         ...prevLikes,
         [commentId]: userLikes[commentId]
@@ -374,6 +416,9 @@ function SoloChallenge() {
               ))}
             </ul>
           </div>
+          <button className="like-button" onClick={handleLikeChallenge}>
+            Like ({challengeLikes})
+          </button>
         </div>
         <div className="grid-item-solo right-solo">
           <div className="timer-container">
@@ -389,20 +434,16 @@ function SoloChallenge() {
             </button>
           </div>
 
-          <textarea
+          <Editor
+            height="550px"
+            language={challenge.language.toLowerCase()}
+            theme="vs-dark"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
-            rows={20}
-            cols={80}
-            disabled={!isRunning} // Disable textarea when timer is not running
-            className={!isRunning ? "textarea-disabled" : ""} // Apply CSS class when disabled
+            onChange={(newValue) => setCode(newValue)}
+            options={{
+              readOnly: !isRunning,
+            }}
           />
-          {output && (
-            <div className="output-container">
-              <h3>Output:</h3>
-              <pre>{output}</pre>
-            </div>
-          )}
         </div>
       </div>
       <div className="challenge-comments-section">

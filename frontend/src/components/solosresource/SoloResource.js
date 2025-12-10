@@ -290,19 +290,26 @@ function SoloResource() {
             </p>
             <p>{comment.comment}</p>
             <div className="comment-actions">
-              <button onClick={() => handleLikeComment(comment.id)}>
+              <button
+                className="like-button"
+                onClick={() => handleLikeComment(comment.id)}
+              >
                 Like ({getCommentLikes(comment.id)})
               </button>
               {user.id === comment.user_id && (
                 <>
                   <button
+                    className="edit-button"
                     onClick={() =>
                       handleEditButtonClick(comment.id, comment.comment)
                     }
                   >
                     Edit
                   </button>
-                  <button onClick={() => handleDeleteComment(comment.id)}>
+                  <button
+                    className="delete-button"
+                    onClick={() => handleDeleteComment(comment.id)}
+                  >
                     Delete
                   </button>
                 </>

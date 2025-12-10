@@ -1,43 +1,66 @@
-import React, { useState, useEffect } from "react";
-import { getUsersOrderedByPoints } from "../../api/users";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import axios from "axios";
+import { getAllUsersOrderedByPoints } from "../../api/users";
+import { useAuth } from "../authentification/AuthContext"; // Import useAuth
 import "./leaderboard.css";
 
 function Leaderboard() {
-  const [leaderboard, setLeaderboard] = useState([]);
+  const { user } = useAuth(); // Get user from useAuth
+  const [allUsers, setAllUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredLeaderboard, setFilteredLeaderboard] = useState([]);
   const [page, setPage] = useState(0);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const usersPerPage = 5;
+  const [filter, setFilter] = useState("Global");
+  const [friends, setFriends] = useState([]);
+
+  const fetchFriends = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/users/${user.id}/friends`
+      );
+      setFriends(response.data);
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+    }
+  }, [user.id]);
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        const data = await getUsersOrderedByPoints(page * 5, 5);
-        setLeaderboard(data);
+    if (filter === "Friends") {
+      fetchFriends();
+    }
+  }, [filter, fetchFriends]);
 
-        if (data.length < 5) {
-          setIsLastPage(true);
-        } else {
-          setIsLastPage(false);
-        }
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      try {
+        const data = await getAllUsersOrderedByPoints();
+        setAllUsers(data);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
       }
     };
 
-    fetchLeaderboard();
-  }, [page]);
+    fetchAllUsers();
+  }, []);
 
-  useEffect(() => {
-    const filtered = leaderboard.filter((user) =>
+  const filteredUsers = useMemo(() => {
+    let users = allUsers;
+
+    if (filter === "Friends") {
+      const friendIds = friends.map((friend) => friend.id);
+      users = users.filter((user) => friendIds.includes(user.id));
+    }
+
+    return users.filter((user) =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setFilteredLeaderboard(filtered);
-  }, [searchTerm, leaderboard]);
+  }, [allUsers, friends, filter, searchTerm]);
 
-  const placeholders = Array.from({
-    length: Math.max(5 - filteredLeaderboard.length, 0),
-  });
+  const startIndex = page * usersPerPage;
+  const endIndex = startIndex + usersPerPage;
+  const currentPageUsers = filteredUsers.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  const isLastPage = page + 1 >= totalPages;
 
   const handleNextPage = () => {
     if (!isLastPage) {
@@ -51,10 +74,16 @@ function Leaderboard() {
     }
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setPage(0);
+  };
+
   return (
     <div className="leaderboard-container">
       <div className="grid-layout-leaderboard">
         <div className="grid-item-leaderboard invisible-leaderboard"></div>
+
         <div className="grid-item-leaderboard middle-leaderboard">
           <div className="main-container-leaderboard">
             <div className="search-bar-leaderboard">
@@ -63,34 +92,47 @@ function Leaderboard() {
                 placeholder="Search by username..."
                 className="search-input-leaderboard"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearchChange}
               />
+              <div className="filter-container">
+                <select
+                  name="filter"
+                  className="filter-dropdown"
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                >
+                  <option value="Global">Global</option>
+                  <option value="Friends">Friends</option>
+                </select>
+              </div>
             </div>
+
             <div className="list-container-leaderboard">
               <ul className="list-leaderboard">
-                {filteredLeaderboard.map((user, index) => (
-                  <li key={user.id} className="list-item-leaderboard">
-                    {/* show the leaderboard position */}
+                {currentPageUsers.map((user, index) => (
+                  <li
+                    key={user.id}
+                    className={`list-item-leaderboard ${
+                      index < usersPerPage ? "visible" : ""
+                    }`}
+                    style={{
+                      animationDelay: `${index * 0.2}s`,
+                    }}
+                  >
                     <span className="username">{user.username}</span>
                     <span className="points">Points: {user.score}</span>
-                    <span className="position">{page * 5 + index + 1}</span>
-
-                    <button
-                      className="see-profile-button"
-                      onClick={() =>
-                        alert(`Viewing profile of ${user.username}`)
-                      }
-                    >
-                      See Profile
-                    </button>
+                    <span className="position">{startIndex + index + 1}</span>
                   </li>
                 ))}
-                {placeholders.map((_, index) => (
-                  <li
-                    key={`placeholder-${index}`}
-                    className="list-item-placeholder"
-                  ></li>
-                ))}
+                {currentPageUsers.length < usersPerPage &&
+                  Array.from({
+                    length: usersPerPage - currentPageUsers.length,
+                  }).map((_, idx) => (
+                    <li
+                      key={`placeholder-${idx}`}
+                      className="list-item-placeholder"
+                    />
+                  ))}
               </ul>
               <div className="pagination-controls">
                 <button
@@ -108,9 +150,14 @@ function Leaderboard() {
                   Next
                 </button>
               </div>
+
+              <div className="pagination-info">
+                Page {page + 1} of {totalPages || 1}
+              </div>
             </div>
           </div>
         </div>
+
         <div className="grid-item-leaderboard invisible-leaderboard"></div>
       </div>
     </div>
