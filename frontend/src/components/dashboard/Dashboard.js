@@ -11,8 +11,11 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [score, setScore] = useState(0);
+  const [rewardPoints, setRewardPoints] = useState(0);
   const [rank, setRank] = useState("");
   const [progress, setProgress] = useState(0);
+  const [maxScore, setMaxScore] = useState(100); // Add maxScore state
+  const [totalChallenges, setTotalChallenges] = useState(0); // Add totalChallenges state
 
   useEffect(() => {
     const fetchUserBadgesAndScore = async () => {
@@ -25,24 +28,40 @@ function Dashboard() {
         const userResponse = await axios.get(
           `http://localhost:8000/users/${user.id}`
         );
+        console.log("User Response:", userResponse.data); // Log the API response
         const userScore = userResponse.data.score;
+        const userRewardPoints = userResponse.data.reward_points;
         setScore(userScore);
+        setRewardPoints(userRewardPoints);
+        console.log("Reward Points:", userRewardPoints); // Log the reward points
+
         if (userScore <= 50) {
           setRank("Beginner");
           setProgress((userScore / 50) * 100);
+          setMaxScore(50); // Set maxScore for Beginner
         } else if (userScore <= 150) {
           setRank("Intermediate");
           setProgress(((userScore - 50) / (150 - 50)) * 100);
+          setMaxScore(150); // Set maxScore for Intermediate
         } else if (userScore <= 300) {
           setRank("Master");
           setProgress(((userScore - 150) / (300 - 150)) * 100);
+          setMaxScore(300); // Set maxScore for Master
         } else if (userScore <= 500) {
           setRank("Expert");
           setProgress(((userScore - 300) / (500 - 300)) * 100);
+          setMaxScore(500); // Set maxScore for Expert
         } else {
           setRank("Legend");
           setProgress(100);
+          setMaxScore(userScore); // Set maxScore for Legend
         }
+
+        const challengesResponse = await axios.get(
+          `http://localhost:8000/users/challenges/`,
+          { params: { user_id: user.id } }
+        );
+        setTotalChallenges(challengesResponse.data.length);
       } catch (err) {
         console.error("Error fetching user data:", err);
         setError("Failed to load user data.");
@@ -57,7 +76,7 @@ function Dashboard() {
   }, [user]);
 
   if (loading) {
-    return <div>Loading dashboard...</div>;
+    return <div className="loading-container"></div>;
   }
 
   if (error) {
@@ -74,8 +93,13 @@ function Dashboard() {
               <div className="card-text-dashboard">
                 <h3>Your Rank: {rank}</h3>
                 <p>Score: {score}</p>
+                <p>Total Challenges: {totalChallenges}</p> {/* Add this line */}
+                <p>Reward points: {rewardPoints}</p>
               </div>
-              <div className="progress-bar-dashboard">
+              <div
+                className="progress-bar-dashboard"
+                title={`${score}/${maxScore}`}
+              >
                 <div
                   className="progress-dashboard"
                   style={{ width: `${progress}%` }}

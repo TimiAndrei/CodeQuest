@@ -16,6 +16,34 @@ class UserRead(BaseModel):
     email: str
     role: str
     score: int
+    reward_points: int
+    reward_timer: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class UserChallengeRead(BaseModel):
+    user_id: int
+    challenge_id: int
+    solution: str
+
+    class Config:
+        from_attributes = True
+
+
+class UserChallengeCreate(BaseModel):
+    user_id: int
+    challenge_id: int
+    solution: str
+
+    class Config:
+        from_attributes = True
+
+
+class UserChallengeDelete(BaseModel):
+    user_id: int
+    challenge_id: int
 
     class Config:
         from_attributes = True
@@ -39,6 +67,8 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     role: Optional[str] = None
     score: Optional[int] = None
+    reward_points: Optional[int] = None
+    reward_timer: Optional[datetime] = None
 
 
 class UserLogin(BaseModel):
@@ -84,6 +114,8 @@ class ChallengeRead(BaseModel):
     difficulty: str
     language: str
     tags: List[int]
+    friend_username: Optional[str] = None
+    status: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -101,12 +133,15 @@ class ChallengeUpdate(BaseModel):
 class ResourceCreate(BaseModel):
     title: str
     description: str
+    reward_points: int
+    tags: List[int]
 
 
 class ResourceRead(BaseModel):
     id: int
     title: str
     description: str
+    reward_points: int
 
     class Config:
         from_attributes = True
@@ -115,6 +150,7 @@ class ResourceRead(BaseModel):
 class ResourceUpdate(BaseModel):
     title: str = None
     description: str = None
+    reward_points: int = None
 
 
 class CodeSubmission(BaseModel):
@@ -124,6 +160,7 @@ class CodeSubmission(BaseModel):
     stdin: str
     expected_output: str
     user_id: int
+    time: int
 
 
 # {
@@ -200,6 +237,8 @@ class NotificationCreate(BaseModel):
     message: str
     link: str
     challenger_username: str
+    challenge_id: int
+    reminder: bool = False  # Add this flag to differentiate reminders
 
 
 class NotificationRead(BaseModel):
@@ -213,3 +252,156 @@ class NotificationRead(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CommentCreate(BaseModel):
+    user_id: int
+    comment: str
+
+
+class CommentRead(BaseModel):
+    id: int
+    user_id: int
+    comment: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ChallengeCommentCreate(BaseModel):
+    challenge_id: int
+    comment_id: int
+
+
+class ChallengeCommentRead(BaseModel):
+    challenge_id: int
+    comment_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ResourceCommentCreate(BaseModel):
+    resource_id: int
+    comment_id: int
+
+
+class ResourceCommentRead(BaseModel):
+    resource_id: int
+    comment_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CommentUpdate(BaseModel):
+    user_id: int = None
+    comment: str = None
+
+
+class ChallengeCommentUpdate(BaseModel):
+    challenge_id: int = None
+    comment_id: int = None
+
+
+class ResourceCommentUpdate(BaseModel):
+    resource_id: int = None
+    comment_id: int = None
+
+
+class PurchaseCreate(BaseModel):
+    user_id: int
+    resource_id: int
+
+
+class PurchaseRead(BaseModel):
+    user_id: int
+    resource_id: int
+    purchase_date: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ResourceLikeCreate(BaseModel):
+    user_id: int
+    resource_id: int
+
+
+class ResourceLikeRead(BaseModel):
+    user_id: int
+    resource_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ResourceLikeDelete(BaseModel):
+    user_id: int
+    resource_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ChallengeLikeCreate(BaseModel):
+    user_id: int
+    challenge_id: int
+
+
+class ChallengeLikeRead(BaseModel):
+    user_id: int
+    challenge_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ChallengeLikeDelete(BaseModel):
+    user_id: int
+    challenge_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CommentLikeCreate(BaseModel):
+    user_id: int
+    comment_id: int
+
+
+class CommentLikeRead(BaseModel):
+    user_id: int
+    comment_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CommentLikeDelete(BaseModel):
+    user_id: int
+    comment_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class PointsUpdate(BaseModel):
+    points: int
+
+
+class TagRead(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class TagCreate(BaseModel):
+    name: str
+
+
+class TagUpdate(BaseModel):
+    name: str = None
